@@ -7,10 +7,7 @@ let Env = {
     devServer: false,
     debug: false,
     setApiRoot(token) {
-        if (token === undefined || token === null) {
-            token = "12345678-1234-1234-1234-123456789012";
-        }
-        axios.defaults.baseURL = `${Env.apiRoot}/${token}`
+        axios.defaults.baseURL = `${Env.apiRoot}`
     },
     longAgo: new moment('10/20/1905'),
 }

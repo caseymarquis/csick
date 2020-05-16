@@ -10,40 +10,38 @@
       <div class="nav-section">
         <router-link to="/" id="text-logo">
             <h1>
-                QApp
+                CSick
             </h1>
           <!-- img :src="imgLogo" id="the-logo" / -->
         </router-link>
         <h2 id="page-title" class="visible-lg" v-text="pageTitle"></h2>
-        <button v-if="loggedIn" class="btn btn-primary" v-on:click="toggleSlide">
+        <button class="btn btn-primary" v-on:click="toggleSlide">
           <span class="glyphicon glyphicon-list"></span>
         </button>
       </div>
 
-      <search-bar id="nav-search" :wide="true" v-if="loggedIn && $store.state.search.show" v-model="searchText" placeholder="Search..."></search-bar>
+      <search-bar id="nav-search" :wide="true" v-if="$store.state.search.show" v-model="searchText" placeholder="Search..."></search-bar>
 
-      <div v-if="loggedIn" class="nav-section">
-        <router-link v-text="userFirstName" :to="'/user/' + $store.state.user.id" class="nav-link"></router-link>
-        <a href="javascript:void(0)" v-on:click="logout" class="nav-link">Log Out</a>
+      <div class="nav-section">
         <router-link to="/" class="nav-link">Home</router-link>
       </div>
     </div>
 
     <div id="site-container" :style="mainDivStyle">
-      <page-home style="height: 100%;" v-if="!loggedIn"></page-home>
-      <router-view v-else style="height: 100%;"></router-view>
+      <test-list id="test-list">
+      </test-list>
+      <router-view id="the-router"></router-view>
     </div>
   </div>
 </template>
 
 <script>
-import PageHome from "../page-home/page-home.vue";
 import AppModal from "../shared-components/app-modal.vue";
 import SearchBar from "../shared-components/search-bar.vue";
 import SlideMenu from "./slide-menu.vue";
+import TestList from "../site-left/test-list/test-list.vue";
 //import imgLogo from "../img/logo.png";
 
-import AuthState from "../js/AuthState.js";
 import SetupPage from "../js/SetupPage.js";
 import router from "../js/router.js";
 
@@ -51,11 +49,7 @@ export default {
     data() {
         return {
             //imgLogo,
-            wasMounted: false
         };
-    },
-    mounted() {
-        this.wasMounted = true;
     },
     created() {
         this.updateScreenHeight();
@@ -65,33 +59,8 @@ export default {
         setInterval(() => {
             this.updateScreenHeight();
         }, 500);
-        AuthState.tryToLogInWithOldAuthToken(this.$store);
     },
     computed: {
-        loggedIn() {
-            return this.$store.state.loggedIn;
-        },
-        userFirstName() {
-            let name = this.$store.state.user.name;
-            if (name == undefined || name == null) {
-                return "";
-            }
-            name = name.trim();
-            let parts = name.split(" ");
-            let ret = "";
-            if (parts.length === 1) {
-                return parts[0];
-            }
-            for (let i = 0; i < parts.length; i++) {
-                let part = parts[i];
-                if (i === parts.length - 1) {
-                    ret += " " + part;
-                } else if (part.length > 0) {
-                    ret += part[0] + ".";
-                }
-            }
-            return ret;
-        },
         pageTitle() {
             return this.$store.state.pageTitle;
         },
@@ -115,11 +84,6 @@ export default {
         }
     },
     methods: {
-        logout() {
-            if (this.wasMounted) {
-                AuthState.logOut(this.$store);
-            }
-        },
         toggleSlide() {
             this.$store.commit("toggleSlide");
         },
@@ -135,16 +99,14 @@ export default {
         }
     },
     components: {
-        PageHome,
         SearchBar,
-        SlideMenu
+        SlideMenu,
+        TestList
     }
 };
 </script>
 
-<style lang="scss">
-@import "globals.scss";
-
+<style scoped>
 #main-layout {
   display: flex;
   flex-flow: column nowrap;
@@ -226,7 +188,19 @@ export default {
 
 #site-container {
   position: relative;
+  display: flex;
+  flex-flow: row nowrap;
 }
+
+#test-list{
+  height: 100%;
+}
+
+#the-router{
+  height: 100%;
+  flex-grow: 1;
+}
+
 
 @media (max-width: 720px) {
   #the-logo {

@@ -6,7 +6,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 
 //Import on main page load:
-import MainRouter from './site/main-router.vue';
+import MainRouter from './site-container/main-router.vue';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { 
@@ -23,10 +23,8 @@ library.add(faSearch, faBars, faArrowLeft, faQuestion,
     faPlus, faTimes, faCalendarAlt);
 
 //Import when navigating to page:
-const MainLayout = () => import('./site/main-layout.vue');
-const PageHome = () => import('./page-home/page-home.vue');
-const PageUsers = () => import('./page-users/page-users.vue');
-const PageUser = () => import('./page-user/page-user.vue');
+const MainLayout = () => import('./site-container/main-layout.vue');
+const TestResults = () => import('./site-right/test-results/test-results.vue');
 
 import Env from './js/Environment';
 import store from './js/store.js';
@@ -40,11 +38,7 @@ const router = new VueRouter({
     routes: [
         { path: "/", component : MainLayout,
             children : [
-                { path: "", component : PageHome,
-                },
-                { path: "users", component : PageUsers,
-                },
-                { path: "user/:id", component : PageUser,
+                { path: "", component : TestResults,
                 },
             ]
         },
