@@ -16,7 +16,7 @@ namespace CSick {
     public static class Util {
         public static string GetSolutionDirectory() {
             var dirPath = Path.GetDirectoryName(typeof(UserSettings).Assembly.Location);
-            while (!Directory.GetFiles(dirPath, "App.sln").Any()) {
+            while (!Directory.GetFiles(dirPath, "CSick.sln").Any()) {
                 dirPath = Path.GetDirectoryName(dirPath);
                 if (string.IsNullOrWhiteSpace(dirPath)) {
                     break;
