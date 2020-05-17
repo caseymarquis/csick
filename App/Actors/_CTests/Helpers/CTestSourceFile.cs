@@ -11,18 +11,20 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace CSick.Actors._CTests.Helpers {
-    public class CTestSourceFile {
+    public readonly struct CTestSourceFile {
         public readonly ImmutableList<string> Lineage;
         public readonly ImmutableList<CTestSourceFile> Children;
+        public readonly ImmutableList<CTest> Tests;
 
         public string FilePath => Lineage.Last();
         public string FileName => Path.GetFileName(FilePath); 
         public readonly DateTimeOffset ParseTime;
 
-        private CTestSourceFile(string path, ImmutableList<string> lineage, DateTimeOffset parseTime, ImmutableList<CTestSourceFile> children) {
+        private CTestSourceFile(string path, ImmutableList<string> lineage, DateTimeOffset parseTime, ImmutableList<CTestSourceFile> children, ImmutableList<CTest> tests) {
             Lineage = lineage;
             ParseTime = parseTime;
             Children = children;
+            Tests = tests;
         }
 
         public static async Task<CTestSourceFile> Create(string path, DateTimeOffset parseTime, Atom<ImmutableList<string>> errorMessages) {
@@ -46,6 +48,7 @@ namespace CSick.Actors._CTests.Helpers {
         static async Task<CTestSourceFile> createInternal(string path, ImmutableList<string> lineage, DateTimeOffset parseTime, Atom<ImmutableList<string>> errorMessages) {
             //Lineage should already include the current path when this function is called.
             string[] absolutePathedDependencies = Array.Empty<string>();
+            var tests = ImmutableList.Create<CTest>();
             try {
                 if (!File.Exists(path)) {
                     errorMessages.Value = errorMessages.Value.Add(getFileNotFoundMessage(lineage));
@@ -53,6 +56,10 @@ namespace CSick.Actors._CTests.Helpers {
                 else {
                     var directory = Path.GetDirectoryName(path);
                     var text = await File.ReadAllTextAsync(path);
+                    if (lineage.Count == 1) {
+                        //root file:
+                        tests = GetTestsFromText(text);
+                    }
                     var childPaths = GetChildPathsFromText(text);
                     absolutePathedDependencies = childPaths.Select(x => Path.GetFullPath(Path.Combine(directory, x))).Distinct().ToArray();
                 }
@@ -68,7 +75,8 @@ namespace CSick.Actors._CTests.Helpers {
                 }
                 children = children.Add(await createInternal(absolutePath, lineage.Add(absolutePath), parseTime, errorMessages));
             }
-            return new CTestSourceFile(path, lineage, parseTime, children);
+
+            return new CTestSourceFile(path, lineage, parseTime, children, tests);
         }
 
         private static Regex dependenciesRegex = new Regex(@"^(\s.)*\#include\s+\""(.*)\""", RegexOptions.Compiled | RegexOptions.Multiline);
@@ -78,6 +86,22 @@ namespace CSick.Actors._CTests.Helpers {
                 return matches.Select(x => x.Groups[2].Value).ToArray();
             }
             return Array.Empty<string>();
+        }
+
+        private static Regex ctestRegex = new Regex(@"START_TEST\(\s*\""(.*)\""\s*\)", RegexOptions.Compiled | RegexOptions.Multiline);
+        public static ImmutableList<CTest> GetTestsFromText(string text) {
+            var result = ImmutableList.Create<CTest>();
+            var testNumber = 0;
+
+            string[] lines = text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            for (var lineNumber = 0; lineNumber < lines.Length; lineNumber++) {
+                var line = lines[lineNumber];
+                if (ctestRegex.IsMatch(line)) {
+                    var match = ctestRegex.Match(line);
+                    result = result.Add(new CTest(++testNumber, lineNumber + 1, match.Groups[1].Value));
+                }
+            }
+            return result;
         }
 
         public bool ReferencesPaths(HashSet<string> changeCandidates) {

@@ -7,8 +7,8 @@ typedef struct {
     int capacity;
 } Buffer;
 
-extern int buffer_init(Buffer * buffer);
+extern int buffer_new(Buffer * buffer);
 extern int buffer_grow(Buffer * buffer);
 extern int buffer_free(Buffer * buffer);
 
-#endif
+#endif //_buffer_h_

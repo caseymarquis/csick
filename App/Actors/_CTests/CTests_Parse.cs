@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace CSick.Actors._CTests {
     [Singleton]
-    public class CTests_ParseDependencies : Actor {
-        [Singleton] AppSettings settings;
+    public class CTests_Parse : Actor {
         [Singleton] CTests_WatchReferencedFiles fileWatcher;
-
-        ImmutableList<CTestSourceFile> rootSourceFiles = ImmutableList.Create<CTestSourceFile>();
+        [Singleton] CTests_AvailableTestFiles activeTestFiles;
 
         public MessageQueue<string> RootSourceFileDetected = new MessageQueue<string>();
         public MessageQueue<string> AnySourceFileDetectedOrChanged = new MessageQueue<string>();
+
+        ImmutableList<CTestSourceFile> parsedRoots = ImmutableList.Create<CTestSourceFile>();
 
         protected override async Task OnRun(ActorUtil util) {
             HashSet<string> rootCandidates = new HashSet<string>();
@@ -40,12 +40,13 @@ namespace CSick.Actors._CTests {
             }
 
             var currentParseTime = util.Now;
+            var activeRootSourceFiles = this.parsedRoots;
             {
-                var newRootPaths = rootCandidates.Where(candidatePath => !rootSourceFiles.Any(file => file.FilePath == candidatePath)).ToArray();
+                var newRootPaths = rootCandidates.Where(candidatePath => !activeRootSourceFiles.Any(file => file.FilePath == candidatePath)).ToArray();
                 foreach (var rootPath in newRootPaths) {
                     var errorMessages = new Atom<ImmutableList<string>>(ImmutableList.Create<string>());
                     var result = await CTestSourceFile.Create(rootPath, currentParseTime, errorMessages);
-                    rootSourceFiles = rootSourceFiles.Add(result);
+                    activeRootSourceFiles = activeRootSourceFiles.Add(result);
                     foreach (var message in errorMessages.Value) {
                         util.Log.Error(message);
                     }
@@ -53,8 +54,8 @@ namespace CSick.Actors._CTests {
             }
 
             {
-                var roots = this.rootSourceFiles;
-                foreach (var root in roots) {
+                var rootsCopy = activeRootSourceFiles;
+                foreach (var root in rootsCopy) {
                     if (root.ParseTime == currentParseTime) {
                         //We already recompiled this round.
                         continue;
@@ -62,6 +63,7 @@ namespace CSick.Actors._CTests {
                     if (root.ReferencesPaths(changeCandidates)) {
                         var errorMessages = new Atom<ImmutableList<string>>(ImmutableList.Create<string>());
                         var result = await CTestSourceFile.Create(root.FilePath, currentParseTime, errorMessages);
+                        activeRootSourceFiles = activeRootSourceFiles.Replace(root, result);
                         foreach (var message in errorMessages.Value) {
                             util.Log.Error(message);
                         }
@@ -70,10 +72,13 @@ namespace CSick.Actors._CTests {
             }
 
             //Remove any missing root files:
-            this.rootSourceFiles = this.rootSourceFiles.Where(x => x.ParseTime == currentParseTime || x.Exists).ToImmutableList();
+            activeRootSourceFiles = activeRootSourceFiles.Where(x => x.Exists).ToImmutableList();
+            this.parsedRoots = activeRootSourceFiles; //<== If anything external wants to look at these
+
+            activeTestFiles.LatestRootFiles.Enqueue(activeRootSourceFiles);
 
             var allUniqueFiles = new HashSet<string>();
-            foreach (var root in rootSourceFiles) {
+            foreach (var root in activeRootSourceFiles) {
                 var leaves = root.Leaves();
                 foreach (var leaf in leaves) {
                     foreach (var path in leaf.Lineage) {

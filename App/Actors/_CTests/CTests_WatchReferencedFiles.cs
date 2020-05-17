@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace CSick.Actors._CTests {
     [Singleton]
     public class CTests_WatchReferencedFiles : Actor {
-        [Singleton] CTests_ParseDependencies parseDependencies;
+        [Singleton] CTests_Parse parser;
 
         public MessageQueue<ImmutableList<string>> AllDirectoriesToWatch = new MessageQueue<ImmutableList<string>>();
 
@@ -34,11 +34,11 @@ namespace CSick.Actors._CTests {
                     void enqueue(object sender, FileSystemEventArgs e) {
                         switch (e) {
                             case RenamedEventArgs re:
-                                parseDependencies.AnySourceFileDetectedOrChanged.Enqueue(re.FullPath);
-                                parseDependencies.AnySourceFileDetectedOrChanged.Enqueue(re.OldFullPath);
+                                parser.AnySourceFileDetectedOrChanged.Enqueue(re.FullPath);
+                                parser.AnySourceFileDetectedOrChanged.Enqueue(re.OldFullPath);
                                 break;
                             case FileSystemEventArgs fe:
-                                parseDependencies.AnySourceFileDetectedOrChanged.Enqueue(fe.FullPath);
+                                parser.AnySourceFileDetectedOrChanged.Enqueue(fe.FullPath);
                                 break;
                         }
                     }

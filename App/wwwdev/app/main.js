@@ -38,7 +38,7 @@ const router = new VueRouter({
     routes: [
         { path: "/", component : MainLayout,
             children : [
-                { path: "", component : TestResults,
+                { path: ":testFile?", component : TestResults,
                 },
             ]
         },

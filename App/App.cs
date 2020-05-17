@@ -45,6 +45,7 @@ namespace CSick {
                     Console.WriteLine($"CSick started in {sw.ElapsedMilliseconds}ms.");
                     await Task.FromResult(0);
                 });
+                await Task.FromResult(0);
             });
         }
 

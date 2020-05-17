@@ -58,7 +58,7 @@ namespace CSick.Web
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "QApp API", Version = "v1" });
             });
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson();
             services.AddSignalR(c => {
                 c.EnableDetailedErrors = true;
             });

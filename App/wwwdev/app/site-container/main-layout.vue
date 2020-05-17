@@ -39,7 +39,7 @@
 import AppModal from "../shared-components/app-modal.vue";
 import SearchBar from "../shared-components/search-bar.vue";
 import SlideMenu from "./slide-menu.vue";
-import TestList from "../site-left/test-list/test-list.vue";
+import TestList from "../test-list/test-list.vue";
 //import imgLogo from "../img/logo.png";
 
 import SetupPage from "../js/SetupPage.js";

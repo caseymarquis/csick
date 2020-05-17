@@ -1,7 +1,4 @@
-#include "../fileText.h"
-#include "../fileText.c"
-#include "../util.c"
-#include "./test.h"
+#include "../../../csick/csick.h"
 
 START_TESTS
 

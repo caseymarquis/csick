@@ -11,7 +11,7 @@ namespace CSick.Actors._CTests {
     [Singleton]
     public class CTests_WatchTestDirectories : Actor {
         [Singleton] AppSettings settings;
-        [Singleton] CTests_ParseDependencies parseDependencies;
+        [Singleton] CTests_Parse parser;
         [Singleton] CTests_WatchReferencedFiles fileWatcher;
 
         private Dictionary<string, DateTimeOffset> files = new Dictionary<string, DateTimeOffset>();
@@ -40,10 +40,10 @@ namespace CSick.Actors._CTests {
                         void enqueue(object sender, FileSystemEventArgs e) {
                             switch (e) {
                                 case RenamedEventArgs re:
-                                    parseDependencies.RootSourceFileDetected.Enqueue(re.OldFullPath);
+                                    parser.RootSourceFileDetected.Enqueue(re.OldFullPath);
                                     break;
                                 case FileSystemEventArgs fe:
-                                    parseDependencies.RootSourceFileDetected.Enqueue(fe.FullPath);
+                                    parser.RootSourceFileDetected.Enqueue(fe.FullPath);
                                     break;
                             }
                         }
@@ -59,7 +59,7 @@ namespace CSick.Actors._CTests {
                         foreach (var pattern in userSettings.TestRootPatterns) {
                             try {
                                 var initialRootFiles = Directory.GetFiles(path, pattern);
-                                parseDependencies.RootSourceFileDetected.EnqueueRange(initialRootFiles);
+                                parser.RootSourceFileDetected.EnqueueRange(initialRootFiles);
                             }
                             catch (Exception ex) {
                                 util.Log.RealTime($"Failed to process root test pattern {pattern} in directory {path}", ex);

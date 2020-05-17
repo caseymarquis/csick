@@ -6,7 +6,7 @@
 #define BUFFER_WASNULL -2
 #define BUFFER_DATAWASNULL -3
 
-extern int buffer_init(Buffer *buffer) {
+extern int buffer_new(Buffer *buffer) {
   if (buffer == NULL) return BUFFER_WASNULL;
 
   int initialSize = 4096;

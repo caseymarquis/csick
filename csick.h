@@ -1,5 +1,6 @@
 #ifndef _test_h_
 #define _test_h_
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,9 +9,9 @@
 
 typedef enum {
     tr_Success = 0,
-    tr_Failed = 9091,
-    tr_BadTestNumber = 9092,
-    tr_AssertFailed = 9093,
+    tr_Failed = 65000,
+    tr_BadTestNumber = 65001,
+    tr_AssertFailed = 65002,
 } TestResult;
 
 extern int test_exitWithMessage(TestResult exitCode, char *msg, ...) {
@@ -45,9 +46,8 @@ extern int _test_getTestToRun(int argc, char ** argv){
     if((++_testCounter) == _testToRun){ \
         _selectedTestName = testName;
 
-#define ASSERT(expression) \
-        if(!(expression)){ \
-            test_exitWithMessage(tr_AssertFailed, "Assert Failed: '%s' Line %d", _selectedTestName, __LINE__ - 2); \
+#define ASSERT(expression) if(!(expression)){ int line = __LINE__; \
+            test_exitWithMessage(line, "Assert Failed: '%s' Line %d", _selectedTestName, line); \
         }
 
 #define END_TEST \
@@ -57,4 +57,5 @@ extern int _test_getTestToRun(int argc, char ** argv){
 #define END_TESTS \
     test_exitWithMessage(tr_BadTestNumber, "Test to run was not found: %d", _testToRun); \
 }
-#endif
+
+#endif //_test_h_
