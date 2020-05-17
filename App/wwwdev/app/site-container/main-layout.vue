@@ -23,7 +23,6 @@
       <search-bar id="nav-search" :wide="true" v-if="$store.state.search.show" v-model="searchText" placeholder="Search..."></search-bar>
 
       <div class="nav-section">
-        <router-link to="/" class="nav-link">Home</router-link>
       </div>
     </div>
 

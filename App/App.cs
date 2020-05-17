@@ -31,6 +31,7 @@ namespace CSick {
                     return;
                 }
             });
+            config.UserSettings.FillInEmptySettings(config);
 
             Director.AddSingletonDependency(config);
             await Director.Run(configure: async directorConfig => {

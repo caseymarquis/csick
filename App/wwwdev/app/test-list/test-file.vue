@@ -2,17 +2,21 @@
  <div class="test-file"> 
      <router-link :to="testFileUrl">
         <button class="btn" :class="getBtnClass">
+            <fa-icon v-if="selected" class="the-icon" icon="caret-square-down"/>
+            <fa-icon v-else class="the-icon" icon="caret-square-right"/>
             <span class="file-name" v-text="testFile.fileName">
             </span>
             <span class="off-text">
-                - <span v-text="testFile.tests.length"></span> Tests
+                <span v-text="testFile.tests.length"></span> Tests
                 - <span v-text="testFile.compileStatus"></span>
             </span>
         </button>
      </router-link>
      <template v-if="selected">
-         <app-test v-for="test in testFile.tests" :test="test" :key="test.number">
+         <app-test v-for="test in testFile.tests" :test="test" :testFile="testFile" :key="test.number">
          </app-test>
+         <div class="footer">
+         </div>
      </template>
  </div>
 </template>
@@ -50,11 +54,20 @@ export default {
 
 .test-file > a {
     width: 100%;
+    text-decoration: none;
 }
 
 .test-file > a > button {
     width: 100%;
     border-bottom: double;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.test-file > a > button > * {
+    margin: 0 .25em;
 }
 
 .file-name{
@@ -64,5 +77,14 @@ export default {
 .off-text{
     opacity: .7;;
     font-size: .9em;
+}
+
+.the-icon {
+    font-size: 1.5em;
+}
+
+.footer{
+    width: 100%;
+    border-bottom: double;
 }
 </style>

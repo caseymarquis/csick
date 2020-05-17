@@ -11,7 +11,9 @@ import MainRouter from './site-container/main-router.vue';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { 
     faSearch, faBars, faArrowLeft, faQuestion,
-    faExclamation, faChevronDown, faChevronUp, faSort,
+    faExclamation, faChevronDown, faChevronUp,
+    faChevronRight,
+    faCaretSquareRight, faCaretSquareDown, faSort,
     faPlus, faTimes, faCalendarAlt, faCogs
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon as FaIcon } from '@fortawesome/vue-fontawesome';
@@ -19,8 +21,9 @@ import { FontAwesomeIcon as FaIcon } from '@fortawesome/vue-fontawesome';
 //Free solid icon list: https://fontawesome.com/icons?d=gallery&s=solid&m=free
 Vue.component('fa-icon', FaIcon);
 library.add(faSearch, faBars, faArrowLeft, faQuestion,
-    faExclamation, faChevronDown, faChevronUp, faSort,
-    faPlus, faTimes, faCalendarAlt, faCogs);
+    faExclamation, faChevronDown, faChevronRight, faChevronUp, faSort,
+    faPlus, faTimes, faCalendarAlt, faCogs, faCaretSquareRight,
+    faCaretSquareDown);
 
 //Import when navigating to page:
 const MainLayout = () => import('./site-container/main-layout.vue');

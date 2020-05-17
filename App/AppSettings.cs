@@ -4,8 +4,10 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace CSick {
@@ -13,22 +15,55 @@ namespace CSick {
         public UserSettings() { }
 
         public UserSettings(AppSettings parent) {
-            LogDirPath = Path.Combine(parent.DataDirPath, "logs");
-            AppUrl = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? @"http://0.0.0.0:5000/";
+            FillInEmptySettings(parent);
+        }
+
+        public void FillInEmptySettings(AppSettings parent) {
+            orEquals(ref LogDirPath, Path.Combine(parent.DataDirPath, "logs"));
+            orEquals(ref AppUrl, Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? @"http://0.0.0.0:5000/");
+            orEquals(ref CompilerPath, "gcc");
 
             var solutionDir = Util.GetSolutionDirectory();
-            TestDirectories = new List<string> {
+            orEqualsList(ref TestDirectories, new List<string> {
                 string.IsNullOrWhiteSpace(solutionDir)? "" : Path.GetFullPath(Path.Combine(solutionDir, "..")),
-            }.ToImmutableList();
-            TestRootPatterns = new List<string> {
+            });
+            orEqualsList(ref TestRootPatterns, new List<string> {
                 "*.c",
-            }.ToImmutableList();
+            });
+            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            orEqualsList(ref CompileArguments, new List<string> {
+                "-O0",
+                "{fileName}{fileExt}",
+                "-o",
+                isWindows? "./bin/{fileName}.exe" : "./bin/{fileName}",
+            });
+
+            void orEquals(ref string self, string defaultValue) {
+                if (string.IsNullOrWhiteSpace(self)) {
+                    self = defaultValue;
+                }
+            }
+
+            void orEqualsList<T>(ref ImmutableList<T> self, IEnumerable<T> defaultValue) {
+                if (self == null || self.IsEmpty) {
+                    self = defaultValue.ToImmutableList();
+                }
+            }
         }
 
         public string LogDirPath;
         public string AppUrl;
         public ImmutableList<string> TestDirectories;
         public ImmutableList<string> TestRootPatterns;
+        public ImmutableList<string> CompileArguments;
+        public string CompilerPath;
+
+        public ImmutableList<string> GetProcessedCompileArguments(string filePath) {
+            var nameExt = Path.GetFileName(filePath);
+            var name = Path.GetFileNameWithoutExtension(nameExt);
+            var ext = Path.GetExtension(nameExt);
+            return CompileArguments.Select(x => x.Replace("{fileName}", name).Replace("{fileExt}", ext)).ToImmutableList();
+        }
     }
 
     public class AppSettings {
