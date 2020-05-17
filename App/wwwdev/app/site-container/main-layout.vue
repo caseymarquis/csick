@@ -8,6 +8,9 @@
 
     <div id="the-nav">
       <div class="nav-section">
+        <button id="settings-toggle" class="btn btn-primary" v-on:click="toggleSlide">
+            <fa-icon icon="cogs"/>
+        </button>
         <router-link to="/" id="text-logo">
             <h1>
                 CSick
@@ -15,9 +18,6 @@
           <!-- img :src="imgLogo" id="the-logo" / -->
         </router-link>
         <h2 id="page-title" class="visible-lg" v-text="pageTitle"></h2>
-        <button class="btn btn-primary" v-on:click="toggleSlide">
-          <span class="glyphicon glyphicon-list"></span>
-        </button>
       </div>
 
       <search-bar id="nav-search" :wide="true" v-if="$store.state.search.show" v-model="searchText" placeholder="Search..."></search-bar>
@@ -134,7 +134,6 @@ export default {
 }
 
 .nav-section {
-  padding-left: 0.5em;
   display: flex;
   flex-flow: row nowrap;
   align-items: center;

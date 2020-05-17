@@ -12,7 +12,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { 
     faSearch, faBars, faArrowLeft, faQuestion,
     faExclamation, faChevronDown, faChevronUp, faSort,
-    faPlus, faTimes, faCalendarAlt
+    faPlus, faTimes, faCalendarAlt, faCogs
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon as FaIcon } from '@fortawesome/vue-fontawesome';
 //Reference for component properties: https://github.com/FortAwesome/vue-fontawesome#basic
@@ -20,7 +20,7 @@ import { FontAwesomeIcon as FaIcon } from '@fortawesome/vue-fontawesome';
 Vue.component('fa-icon', FaIcon);
 library.add(faSearch, faBars, faArrowLeft, faQuestion,
     faExclamation, faChevronDown, faChevronUp, faSort,
-    faPlus, faTimes, faCalendarAlt);
+    faPlus, faTimes, faCalendarAlt, faCogs);
 
 //Import when navigating to page:
 const MainLayout = () => import('./site-container/main-layout.vue');
