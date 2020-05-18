@@ -1,4 +1,5 @@
 ﻿using CSick.Actors._CTests.Helpers;
+using CSick.Actors.Signalr;
 using KC.Actin;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace CSick.Actors._CTests {
     public class CTests_AvailableTestFile : Scene<CTests_AvailableTest, Role, int, Role<string>, string> {
         [FlexibleParent] CTests_AvailableTestFiles parent;
         [Singleton] AppSettings settings;
+        [Singleton] Signalr_SendUpdates sendUpdates;
 
         protected override TimeSpan RunDelay => new TimeSpan(0, 0, 0, 0, 50);
 
@@ -45,9 +47,15 @@ namespace CSick.Actors._CTests {
             var mySourceFile = parent.RootSourceFiles.FirstOrDefault(x => x.FilePath == this.Id);
             if (mySourceFile.FilePath == null) {
                 this.Dispose();
+                triggerUpdate();
                 return null;
             }
-            sourceFile.Value = mySourceFile;
+
+            if (sourceFile.Value.ParseTime != mySourceFile.ParseTime) {
+                sourceFile.Value = mySourceFile;
+                triggerUpdate();
+            }
+            var compileStatusWas = this.CompileStatus;
 
             var result = mySourceFile.Tests.Select(x => new Role {
                 Id = x.TestNumber,
@@ -95,6 +103,10 @@ namespace CSick.Actors._CTests {
                     throw new NotImplementedException(status.ToString("g"));
             }
 
+            if (compileStatusWas != CompileStatus) {
+                triggerUpdate();
+            }
+
             bool startCompile() {
                 lock (lockStringBuilders) {
                     sbStdOut.Clear();
@@ -137,10 +149,17 @@ namespace CSick.Actors._CTests {
                     if (amountRead == 0) {
                         break; //Just in case
                     }
+                    else {
+                        triggerUpdate();
+                    }
                     lock (lockStringBuilders) {
                         to.Append(buffer, 0, amountRead);
                     }
                 }
+            }
+
+            void triggerUpdate() {
+                sendUpdates.Send_UpdateTestsFile(mySourceFile.FileName ?? "");
             }
 
             return await Task.FromResult(result);

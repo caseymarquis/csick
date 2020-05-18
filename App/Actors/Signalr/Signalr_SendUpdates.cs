@@ -26,8 +26,8 @@ namespace CSick.Actors.Signalr {
         private MessageQueue<Update> updates = new MessageQueue<Update>();
         private IHubContext<UpdateHub, IUpdateHubClient> hubContext;
 
-        public void Send_RandomNumber(string msg) {
-            this.addUpdate($"random-number", msg);
+        public void Send_UpdateTestsFile(string filePath) {
+            this.addUpdate($"tests", filePath);
         }
 
         /// <summary>

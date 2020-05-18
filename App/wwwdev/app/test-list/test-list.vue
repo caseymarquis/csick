@@ -1,43 +1,50 @@
 <template>
- <div class="test-list"> 
-     <h2 class="header">
-         Available Test Files
-     </h2>
-     <div class="test-list-container">
-        <test-file v-for="testFile in testFiles" :testFile="testFile" :key="testFile.path">
-        </test-file>
-     </div>
- </div> 
+    <div class="test-list">
+        <h2 class="header">Available Test Files</h2>
+        <div class="test-list-container">
+            <test-file v-for="testFile in testFiles" :testFile="testFile" :key="testFile.path"></test-file>
+        </div>
+    </div>
 </template>
 
 <script>
 import api from "../js/api.js";
 import TestFile from "./test-file.vue";
+import Updates from "../js/Updates.js";
 
 export default {
-    data(){
+    data() {
         return {
-            testFiles: [],
-        }
+            testFiles: []
+        };
     },
-    created(){
+    created() {
+        Updates.register(this, ["tests"]);
         this.fetchData();
     },
+    destroyed() {
+        Updates.remove(this);
+    },
     methods: {
-        fetchData(){
+        fetchData() {
             api.get(`RootSourceFile`).then(testFiles => {
                 this.testFiles = testFiles;
             });
+        },
+        processUpdate: function(group, cmd) {
+            if (group === "tests") {
+                this.fetchData();
+            }
         }
     },
     components: {
-        TestFile,
+        TestFile
     }
-}
+};
 </script>
 
 <style scoped>
-.test-list{
+.test-list {
     display: flex;
     flex-flow: column nowrap;
     height: 100%;
@@ -55,8 +62,8 @@ export default {
     overflow-y: scroll;
 }
 
-.header{
-    padding: .25em .5em;
+.header {
+    padding: 0.25em 0.5em;
     margin: 0;
     border-bottom: solid;
     border-width: 3px;
