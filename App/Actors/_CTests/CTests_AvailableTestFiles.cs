@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 namespace CSick.Actors._CTests {
     [Singleton]
     public class CTests_AvailableTestFiles : Scene<CTests_AvailableTestFile, Role<string>, string> {
+        protected override TimeSpan RunDelay => new TimeSpan(0, 0, 0, 0, 50);
+
         public readonly MessageQueue<ImmutableList<CTestSourceFile>> LatestRootFiles = new MessageQueue<ImmutableList<CTestSourceFile>>();
 
         private readonly Atom<ImmutableList<CTestSourceFile>> lastKnownActiveRoots = new Atom<ImmutableList<CTestSourceFile>>(ImmutableList.Create<CTestSourceFile>());

@@ -13,6 +13,8 @@ namespace CSick.Actors._CTests {
         [Singleton] CTests_WatchReferencedFiles fileWatcher;
         [Singleton] CTests_AvailableTestFiles activeTestFiles;
 
+        protected override TimeSpan RunDelay => new TimeSpan(0, 0, 0, 0, 50);
+
         public MessageQueue<string> RootSourceFileDetected = new MessageQueue<string>();
         public MessageQueue<string> AnySourceFileDetectedOrChanged = new MessageQueue<string>();
 

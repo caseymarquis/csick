@@ -11,6 +11,8 @@ namespace CSick.Actors._CTests {
     public class CTests_AvailableTest : Actor {
         [FlexibleParent] CTests_AvailableTestFile parentFile;
 
+        protected override TimeSpan RunDelay => new TimeSpan(0, 0, 0, 0, 50);
+
         public readonly MessageQueue<CTestCommand> Commands = new MessageQueue<CTestCommand>();
 
         public CTest Test => parentFile.SourceFile.Tests.FirstOrDefault(x => x.TestNumber == this.Id);

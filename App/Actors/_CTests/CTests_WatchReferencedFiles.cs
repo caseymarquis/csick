@@ -11,6 +11,8 @@ namespace CSick.Actors._CTests {
     public class CTests_WatchReferencedFiles : Actor {
         [Singleton] CTests_Parse parser;
 
+        protected override TimeSpan RunDelay => new TimeSpan(0, 0, 0, 0, 50);
+
         public MessageQueue<ImmutableList<string>> AllDirectoriesToWatch = new MessageQueue<ImmutableList<string>>();
 
         Dictionary<string, FileSystemWatcher> fileWatchers = new Dictionary<string, FileSystemWatcher>();

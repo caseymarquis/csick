@@ -14,6 +14,8 @@ namespace CSick.Actors._CTests {
         [Singleton] CTests_Parse parser;
         [Singleton] CTests_WatchReferencedFiles fileWatcher;
 
+        protected override TimeSpan RunDelay => new TimeSpan(0, 0, 0, 0, 50);
+
         private Dictionary<string, DateTimeOffset> files = new Dictionary<string, DateTimeOffset>();
         private Dictionary<string, FileSystemWatcher> watchers = new Dictionary<string, FileSystemWatcher>();
 

@@ -16,6 +16,8 @@ namespace CSick.Actors._CTests {
         [FlexibleParent] CTests_AvailableTestFiles parent;
         [Singleton] AppSettings settings;
 
+        protected override TimeSpan RunDelay => new TimeSpan(0, 0, 0, 0, 50);
+
         Atom<CTestSourceFile> sourceFile = new Atom<CTestSourceFile>();
         public CTestSourceFile SourceFile => sourceFile.Value;
 

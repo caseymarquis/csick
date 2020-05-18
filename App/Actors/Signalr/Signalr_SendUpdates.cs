@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace CSick.Actors.Signalr {
     [Singleton]
     public class Signalr_SendUpdates : Actor {
-        protected override TimeSpan RunDelay => new TimeSpan(0, 0, 1); //NOTE: You can adjust this to rate limit how often signalr updates send.
+        protected override TimeSpan RunDelay => new TimeSpan(0, 0, 0, 0, 250); //NOTE: You can adjust this to rate limit how often signalr updates send.
 
         protected override async Task OnInit(ActorUtil util) {
             while (this.hubContext == null) {
@@ -42,10 +42,11 @@ namespace CSick.Actors.Signalr {
         }
 
         private string mySignalrHostId = Guid.NewGuid().ToString();
-        private long pingCount = 0;
+        private DateTimeOffset lastPing = DateTimeOffset.MinValue;
         protected override async Task OnRun(ActorUtil util) {
-            pingCount++;
-            if ((pingCount % 5) == 0) {
+            var timeSinceLastPing = util.Started - lastPing;
+            if (timeSinceLastPing > new TimeSpan(0, 0, 5)) {
+                lastPing = util.Started;
                 await hubContext.Clients.All.receiveUpdates(new List<string>() { $"ping|{mySignalrHostId}" });
             }
 
