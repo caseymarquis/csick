@@ -1,11 +1,11 @@
 <template>
-<div class="app-test">
+<div class="app-test" :class="classFromStatus">
     <div>
         <fa-icon class="the-icon" icon="chevron-right"/>
         <span class="name" v-text="test.name">
         </span>
     </div>
-    <span v-text="runStatus">
+    <span class="status-text" v-text="status">
     </span>
 </div>
 </template>
@@ -14,7 +14,7 @@
 export default {
     props: ['test', 'testFile'],
     computed: {
-        runStatus(){
+        status(){
             let status = this.test.runStatus;
             let result = this.test.testResult;
             switch(status){
@@ -24,14 +24,24 @@ export default {
                     }
                     else{
                         if(result.success){
-                            return 'Passed';
+                            return 'Pass';
                         }
                         else{
-                            return 'Failed';
+                            return 'Fail';
                         }
                     }
             }
             return this.test.runStatus;
+        },
+        classFromStatus(){
+            let status = this.status;
+            if(status === 'Pass'){
+                return {'passed': true }
+            }
+            else if(status === "Fail"){
+                return {'failed': true }
+            }
+            return {};
         }
     }
 }
@@ -46,6 +56,19 @@ export default {
     flex-flow: row nowrap;
     align-items: center;
     justify-content: space-between;
+}
+
+.passed > .status-text {
+    color: #9bff9b;
+}
+
+.failed > .status-text {
+    color: #ffbfca;
+}
+
+.status-text {
+    font-family: monospace;
+    font-size: 1.25em;
 }
 
 .name{
