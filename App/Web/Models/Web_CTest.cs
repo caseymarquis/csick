@@ -10,5 +10,16 @@ namespace CSick.Web.Models {
         public int lineNumber;
         public int testNumber;
         public string runStatus;
+
+        public Web_TestResult testResult;
+    }
+
+    public class Web_TestResult {
+        public bool finished;
+        public bool success;
+        public int exitCode;
+        public DateTimeOffset timeStarted;
+        public DateTimeOffset timeStopped;
+        public string output;
     }
 }

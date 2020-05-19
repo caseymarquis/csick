@@ -30,6 +30,10 @@ namespace CSick.Actors.Signalr {
             this.addUpdate($"tests", filePath);
         }
 
+        public void Send_UpdateTest(string filePath, int testNumber) {
+            this.addUpdate($"tests", $"{filePath}/{testNumber}");
+        }
+
         /// <summary>
         /// Create a new public function when you need to call this.
         /// This prevents magic strings from propagating all over the application.

@@ -27,6 +27,7 @@ namespace CSick.Actors._CTests {
         public CompileStatus CompileStatus => compileStatus.Value;
 
         readonly Atom<CompileResult> compileResult = new Atom<CompileResult>(new CompileResult(notDone: true));
+        public CompileResult CompileResult => compileResult.Value;
 
         DateTimeOffset sourceVersion = DateTimeOffset.MinValue;
         DateTimeOffset compileStarted;
@@ -64,16 +65,25 @@ namespace CSick.Actors._CTests {
             var status = CompileStatus;
             switch (status) {
                 case CompileStatus.Modified:
+                    compileResult.Value = new CompileResult(notDone: true);
                     try {
-                        compileStatus.Value = startCompile() ? CompileStatus.Compiling : CompileStatus.Failed;
+                        if (startCompile(out var failedResult)) {
+                            compileStatus.Value = CompileStatus.Compiling;
+                        }
+                        else {
+                            compileResult.Value = failedResult;
+                            compileStatus.Value = CompileStatus.Failed;
+                        }
                     }
                     catch (Exception ex) {
                         util.Log.Error(ex);
-                        this.compileResult.Value = new CompileResult(singleError: ex.Message, compileStarted, util.Now);
+                        this.compileResult.Value = new CompileResult(error: ex.Message, compileStarted, util.Now);
                         compileStatus.Value = CompileStatus.Failed;
                     }
                     break;
                 case CompileStatus.Compiling:
+                    //TODO: What if a file is modified during compile?
+                    //Right now we have to wait. If the compile is stuck, that's bad.
                     var doneCompiling = compileProcess.HasExited;
                     await readFromStream(compileProcess.StandardOutput, sbStdOut);
                     await readFromStream(compileProcess.StandardError, sbStdErr);
@@ -81,7 +91,7 @@ namespace CSick.Actors._CTests {
                         var exitCode = compileProcess.ExitCode;
                         if (exitCode != 0) {
                             this.compileResult.Value = new CompileResult(
-                                singleError: $"Exit Code: {exitCode}:{Environment.NewLine}{StandardError}",
+                                error: $"Exit Code: {exitCode}:{Environment.NewLine}{StandardError}",
                                 compileProcess.StartTime,
                                 compileProcess.ExitTime);
 
@@ -107,14 +117,13 @@ namespace CSick.Actors._CTests {
                 triggerUpdate();
             }
 
-            bool startCompile() {
+            bool startCompile(out CompileResult failedResult) {
                 lock (lockStringBuilders) {
                     sbStdOut.Clear();
                     sbStdErr.Clear();
                 }
                 sourceVersion = mySourceFile.ParseTime;
                 compileStarted = util.Now;
-                compileResult.Value = new CompileResult(notDone: true);
                 var us = settings.UserSettings;
                 try {
                     var psi = new ProcessStartInfo {
@@ -126,15 +135,17 @@ namespace CSick.Actors._CTests {
                         Arguments = string.Join(' ', us.GetProcessedCompileArguments(mySourceFile.FilePath))
                     };
                     try {
-                        //HACK: Only annoying if you change the default out location...
+                        //TODO: Out file is effectively hardcoded to ./bin/{fileName}{optionalOSExtension}
+                        //Changing this would be a giant pain.
                         Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(mySourceFile.FilePath), "bin"));
                     }
                     catch { }
                     compileProcess = Process.Start(psi);
+                    failedResult = new CompileResult(notDone: true);
                     return true;
                 }
                 catch (Exception ex) {
-                    compileResult.Value = new CompileResult(singleError: $"Failed to start compiler: {ex.Message}", compileStarted, util.Now);
+                    failedResult = new CompileResult(error: $"Failed to start compiler: {ex.Message}", compileStarted, util.Now);
                     return false;
                 }
             }

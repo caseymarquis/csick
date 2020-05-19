@@ -15,11 +15,21 @@ export default {
     props: ['test', 'testFile'],
     computed: {
         runStatus(){
-            if(this.testFile.compileStatus !== 'Compiled'){
-                return 'Waiting on Compile'
-            }
-            switch(this.test.runStatus){
-                case 'NotRun': return 'Not Run';
+            let status = this.test.runStatus;
+            let result = this.test.testResult;
+            switch(status){
+                case 'WaitingOnParent':
+                    if(!result.finished){
+                        return 'Waiting on Compile';
+                    }
+                    else{
+                        if(result.success){
+                            return 'Passed';
+                        }
+                        else{
+                            return 'Failed';
+                        }
+                    }
             }
             return this.test.runStatus;
         }
