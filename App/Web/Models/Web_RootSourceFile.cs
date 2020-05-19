@@ -8,6 +8,7 @@ namespace CSick.Web.Models {
     public class Web_RootSourceFile {
         public string fileName;
         public string path;
+        public string pathHash;
         public string compileStatus;
 
         public Web_CompileResult compileResult;        

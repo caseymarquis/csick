@@ -32,10 +32,10 @@ export default {
     props: ["testFile"],
     computed: {
         testFileUrl() {
-            return `/${this.testFile.path}`;
+            return `/${this.testFile.pathHash}`;
         },
         selected() {
-            return this.$route.params.testFile === this.testFile.path;
+            return this.$route.params.pathHash === this.testFile.pathHash;
         },
         getBtnClass() {
             return {

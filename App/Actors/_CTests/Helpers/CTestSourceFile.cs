@@ -17,7 +17,8 @@ namespace CSick.Actors._CTests.Helpers {
         public readonly ImmutableList<CTest> Tests;
 
         public string FilePath => Lineage.Last();
-        public string FileName => Path.GetFileName(FilePath); 
+        public string FileName => Path.GetFileName(FilePath);
+        public string PathHash => Util.GetMd5(FilePath);
         public readonly DateTimeOffset ParseTime;
 
         private CTestSourceFile(string path, ImmutableList<string> lineage, DateTimeOffset parseTime, ImmutableList<CTestSourceFile> children, ImmutableList<CTest> tests) {

@@ -27,7 +27,9 @@ library.add(faSearch, faBars, faArrowLeft, faQuestion,
 
 //Import when navigating to page:
 const MainLayout = () => import('./site-container/main-layout.vue');
-const TestResults = () => import('./site-right/test-results/test-results.vue');
+const AppHelp = () => import('./site-right/app-help/app-help.vue');
+const CompileResults = () => import('./site-right/compile-results/compile-results.vue'); 
+const TestResults = () => import('./site-right/test-results/test-results.vue'); 
 
 import Env from './js/Environment';
 import store from './js/store.js';
@@ -41,7 +43,12 @@ const router = new VueRouter({
     routes: [
         { path: "/", component : MainLayout,
             children : [
-                { path: ":testFile?", component : TestResults,
+                { path: "", component : AppHelp,
+                },
+                { path: ":pathHash", component : CompileResults,
+                    children : [
+                        { path: ":testNumber", component : TestResults, }
+                    ]
                 },
             ]
         },
