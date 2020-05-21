@@ -10,8 +10,10 @@ namespace CSick.Web.Models {
         public int lineNumber;
         public int testNumber;
         public string runStatus;
+        public string[] lines;
 
         public Web_TestResult testResult;
+        public Web_RootSourceFile parent;
     }
 
     public class Web_TestResult {

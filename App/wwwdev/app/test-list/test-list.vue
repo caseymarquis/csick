@@ -1,6 +1,10 @@
 <template>
     <div class="test-list">
-        <h2 class="header">Available Test Files</h2>
+        <div class="header-container">
+            <h2 class="header">
+                Available Test Files
+            </h2>
+        </div>
         <div class="test-list-container">
             <test-file v-for="testFile in testFiles" :testFile="testFile" :key="testFile.path"></test-file>
         </div>
@@ -48,8 +52,8 @@ export default {
     display: flex;
     flex-flow: column nowrap;
     height: 100%;
+    background-color: #212121;
 
-    border-right: solid;
     border-width: 2px;
     min-width: 20%;
 }
@@ -62,14 +66,20 @@ export default {
     overflow-y: scroll;
 }
 
-.header {
-    padding: 0.25em 0.5em;
-    margin: 0;
-    border-bottom: solid;
-    border-width: 3px;
-    color: lightgray;
+.header-container {
+    background-color: #212121;
+    width: 100%;
+    border-bottom: double;
+    border-right: solid;
+    border-right-width: 1px;
+}
 
+.header {
     display: flex;
     justify-content: center;
+}
+
+.header-bright {
+    color: white;
 }
 </style>

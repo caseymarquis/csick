@@ -14,7 +14,7 @@ import {
     faExclamation, faChevronDown, faChevronUp,
     faChevronRight,
     faCaretSquareRight, faCaretSquareDown, faSort,
-    faPlus, faTimes, faCalendarAlt, faCogs
+    faPlus, faTimes, faCalendarAlt, faCogs, faArrowRight
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon as FaIcon } from '@fortawesome/vue-fontawesome';
 //Reference for component properties: https://github.com/FortAwesome/vue-fontawesome#basic
@@ -23,7 +23,7 @@ Vue.component('fa-icon', FaIcon);
 library.add(faSearch, faBars, faArrowLeft, faQuestion,
     faExclamation, faChevronDown, faChevronRight, faChevronUp, faSort,
     faPlus, faTimes, faCalendarAlt, faCogs, faCaretSquareRight,
-    faCaretSquareDown);
+    faCaretSquareDown, faArrowRight);
 
 //Import when navigating to page:
 const MainLayout = () => import('./site-container/main-layout.vue');
@@ -46,10 +46,9 @@ const router = new VueRouter({
                 { path: "", component : AppHelp,
                 },
                 { path: ":pathHash", component : CompileResults,
-                    children : [
-                        { path: ":testNumber", component : TestResults, }
-                    ]
                 },
+                { path: ":pathHash/:testNumber", component : TestResults,
+                }
             ]
         },
     ]
