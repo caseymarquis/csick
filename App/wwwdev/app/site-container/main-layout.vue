@@ -109,7 +109,7 @@ export default {
 #main-layout {
   display: flex;
   flex-flow: column nowrap;
-  padding-top: 50px;
+  padding-top: 0;
 }
 
 #print-header {
@@ -120,6 +120,7 @@ export default {
 }
 
 #the-nav {
+  display: none !important;
   position: fixed;
   top: 0;
   z-index: 5;
