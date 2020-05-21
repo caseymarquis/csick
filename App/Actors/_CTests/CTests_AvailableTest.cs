@@ -120,7 +120,7 @@ namespace CSick.Actors._CTests {
                     break;
                 case RunStatus.Paused:
                     if (shouldResumeOrForce) {
-                        runStatus.Value = RunStatus.Scheduled;
+                        runStatus.Value = parentHasCompiled? RunStatus.Scheduled : RunStatus.WaitingOnParent;
                     }
                     break;
             }
