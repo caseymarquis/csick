@@ -43,6 +43,7 @@ namespace CSick.Actors._CTests {
                             switch (e) {
                                 case RenamedEventArgs re:
                                     parser.RootSourceFileDetected.Enqueue(re.OldFullPath);
+                                    parser.RootSourceFileDetected.Enqueue(re.FullPath);
                                     break;
                                 case FileSystemEventArgs fe:
                                     parser.RootSourceFileDetected.Enqueue(fe.FullPath);
