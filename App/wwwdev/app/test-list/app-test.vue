@@ -1,13 +1,17 @@
 <template>
-<div class="app-test" :class="classFromStatus">
-    <div>
-        <fa-icon class="the-icon" icon="chevron-right"/>
-        <span class="name" v-text="test.name">
-        </span>
-    </div>
-    <span class="status-text" v-text="status">
-    </span>
-</div>
+<router-link :to="myUri" class="app-test">
+    <button class="btn btn-dark" :class="classFromStatus">
+        <div>
+            <fa-icon class="the-icon" icon="chevron-right"/>
+            <span class="name" v-text="test.name">
+            </span>
+        </div>
+        <div class="status-background">
+            <span class="status-text" v-text="status">
+            </span>
+        </div>
+    </button>
+</router-link>
 </template>
 
 <script>
@@ -34,14 +38,23 @@ export default {
             return this.test.runStatus;
         },
         classFromStatus(){
-            let status = this.status;
-            if(status === 'Pass'){
-                return {'passed': true }
+            return {
+                'passed': this.status === 'Pass',
+                'failed': this.status === 'Fail',
+                'btn-info': this.selected,
+                'btn-dark': !this.selected,
             }
-            else if(status === "Fail"){
-                return {'failed': true }
-            }
-            return {};
+        },
+        myUri(){
+            return `/${this.testFile.pathHash}/${this.test.testNumber}`;
+        },
+        selected(){
+            return this.$route.params.testNumber == this.test.testNumber;
+        },
+    },
+    methods: {
+        onClick(){
+            this.$emit('select', this.test.testNumber);
         }
     }
 }
@@ -49,8 +62,13 @@ export default {
 
 <style scoped>
 .app-test {
-    border-bottom: solid;
+    border-color: black;
+    display: flex;
+}
+
+.app-test > button {
     padding: .25em;
+    flex-grow: 1;
 
     display: flex;
     flex-flow: row nowrap;
@@ -58,17 +76,36 @@ export default {
     justify-content: space-between;
 }
 
-.passed > .status-text {
+.status-background {
+    background: #788086;
+    border-radius: .5em;
+    padding: 0 .25em .1em .25em;
+    text-shadow: black 1px 1px 2px;
+    border: solid;
+    border-width: 1px;
+    border-color: darkgray;
+}
+
+.passed > div {
+    border-color: #9bff9b;
+}
+
+.failed > div {
+    border-color: #ffbfca;
+}
+
+.passed > div > .status-text {
     color: #9bff9b;
 }
 
-.failed > .status-text {
+.failed > div > .status-text {
     color: #ffbfca;
 }
 
 .status-text {
     font-family: monospace;
     font-size: 1.25em;
+    font-weight: bold;
 }
 
 .name{

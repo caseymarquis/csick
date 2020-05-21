@@ -9,7 +9,9 @@
                     <span class="off-text">
                         <span v-text="testFile.tests.length"></span> Tests
                     </span>
-                    <span v-text="status" class="badge badge-pill status" :class="getClassFromStatus"></span>
+                    <div class="status-background" :class="getClassFromStatus">
+                        <span v-text="status" class="status-text"></span>
+                    </div>
                 </span>
             </button>
         </router-link>
@@ -76,15 +78,15 @@ export default {
         getClassFromStatus() {
             switch (this.status) {
                 case "Failed to Compile":
-                    return { "badge-danger": true };
+                    return { "failed": true };
                 case "Pass":
-                    return { 'badge-success': true };
+                    return { 'passed': true };
                 case "Fail":
-                    return { 'badge-danger': true };
+                    return { 'failed': true };
                 case "Partial Pass":
-                    return { "badge-warning": true };
+                    return { "passed-partial": true };
             }
-            return { "badge-dark": true };
+            return { "other": true };
         }
     },
     components: {
@@ -119,6 +121,7 @@ export default {
 
 .file-name {
     font-size: 1.2em;
+    margin-right: auto !important;
 }
 
 .off-container {
@@ -141,12 +144,34 @@ export default {
     border-bottom: double;
 }
 
-.status{
-    font-size: 1em;
-    text-shadow: black 1px 1px 2px;
+.status-background {
     margin-left: 1em;
+    background-color: #272b30;
+    border-radius: .5em;
+    padding: 0 .25em .1em .25em;
+    text-shadow: black 1px 1px 2px;
     border: solid;
-    border-color: #fff8;
     border-width: 1px;
+    border-color: darkgray;
+}
+
+.failed {
+    border-color: #ffd0d0;
+    color: #ffd0d0;
+}
+
+.passed-partial {
+    border-color: lightblue;
+    color: lightblue;
+}
+
+.passed {
+    border-color: #9bff9b;
+    color: #9bff9b;
+}
+
+.status-text {
+    font-size: 1em;
+    font-weight: bold;
 }
 </style>
