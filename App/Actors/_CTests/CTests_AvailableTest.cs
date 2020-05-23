@@ -48,8 +48,6 @@ namespace CSick.Actors._CTests {
         protected override async Task OnRun(ActorUtil util) {
             var cmds = Commands.DequeueAll();
 
-            var statusWas = this.runStatus.Value;
-
             var compileResult = parentFile.CompileResult;
             var parentHasCompiled = compileResult.Finished && compileResult.Success;
             var parentWasRecompiled = parentHasCompiled && compileResult.TimeStopped != lastKnownParentCompileTime;
@@ -57,79 +55,92 @@ namespace CSick.Actors._CTests {
 
             var shouldPause = cmds.Any(x => x == CTestCommand.Cancel);
             var shouldResumeOrForce = !shouldPause && cmds.Any(x => x == CTestCommand.Run);
-            switch (statusWas) {
-                case RunStatus.WaitingOnParent:
-                    if (shouldPause) {
-                        runStatus.Value = RunStatus.Paused;
-                    }
-                    else if (parentWasRecompiled || (shouldResumeOrForce && parentHasCompiled)) {
-                        runStatus.Value = RunStatus.Scheduled;
-                    }
-                    break;
-                case RunStatus.Scheduled:
-                    if (shouldPause) {
-                        runStatus.Value = RunStatus.Paused;
-                    }
-                    else if (!parentHasCompiled) {
-                        runStatus.Value = RunStatus.WaitingOnParent;
-                    }
-                    else {
-                        try {
-                            if (startTest(out var failedResult)) {
-                                runStatus.Value = RunStatus.Running;
-                            }
-                            else {
-                                this.testResult.Value = failedResult;
-                                runStatus.Value = RunStatus.WaitingOnParent;
-                            }
-                        }
-                        catch (Exception ex) {
-                            util.Log.Error(ex);
-                            this.testResult.Value = new TestResult(error: ex.Message, testStarted, util.Now);
-                            runStatus.Value = RunStatus.WaitingOnParent;
-                        }
-                    }
-                    break;
-                case RunStatus.Running:
-                    if (shouldPause) {
-                        testResult.Value = cancelTest();
-                        runStatus.Value = RunStatus.Paused;
-                    }
-                    else {
-                        var doneTesting = testProcess.HasExited;
-                        await readFromStream(testProcess.StandardOutput, sbStdOut);
-                        await readFromStream(testProcess.StandardError, sbStdErr);
-                        if (doneTesting) {
-                            var exitCode = testProcess.ExitCode;
-                            if (exitCode != 0) {
-                                this.testResult.Value = new TestResult(
-                                    finished: true,
-                                    success: false,
-                                    exitCode: exitCode,
-                                    testProcess.StartTime,
-                                    testProcess.ExitTime,
-                                    StandardError);
-                                this.runStatus.Value = RunStatus.WaitingOnParent;
-                            }
-                            else {
-                                this.testResult.Value = new TestResult(finished: true, success: true, testProcess.ExitCode, testProcess.StartTime, testProcess.ExitTime, StandardOut);
-                                this.runStatus.Value = RunStatus.WaitingOnParent;
-                            }
-                        }
-                    }
-                    break;
-                case RunStatus.Paused:
-                    if (shouldResumeOrForce) {
-                        runStatus.Value = parentHasCompiled? RunStatus.Scheduled : RunStatus.WaitingOnParent;
-                    }
-                    break;
-            }
+
+            var statusWas = this.runStatus.Value;
+            this.runStatus.Value = await step();
 
             if (statusWas != RunStatus) {
                 triggerUpdate();
             }
 
-            await Task.FromResult(0);
+            return;
+
+            async Task<RunStatus> step() {
+                switch (statusWas) {
+                    case RunStatus.WaitingOnParent:
+                        if (shouldPause) {
+                            return RunStatus.Paused;
+                        }
+                        else if (parentWasRecompiled || (shouldResumeOrForce && parentHasCompiled)) {
+                            return RunStatus.Scheduled;
+                        }
+                        else {
+                            return RunStatus.WaitingOnParent;
+                        }
+                    case RunStatus.Scheduled:
+                        if (shouldPause) {
+                            return RunStatus.Paused;
+                        }
+                        else if (!parentHasCompiled) {
+                            return RunStatus.WaitingOnParent;
+                        }
+                        else {
+                            try {
+                                if (startTest(out var failedResult)) {
+                                    return RunStatus.Running;
+                                }
+                                else {
+                                    this.testResult.Value = failedResult;
+                                    return RunStatus.WaitingOnParent;
+                                }
+                            }
+                            catch (Exception ex) {
+                                util.Log.Error(ex);
+                                this.testResult.Value = new TestResult(error: ex.Message, testStarted, util.Now);
+                                return RunStatus.WaitingOnParent;
+                            }
+                        }
+                    case RunStatus.Running:
+                        if (shouldPause) {
+                            testResult.Value = cancelTest();
+                            return RunStatus.Paused;
+                        }
+                        else {
+                            var doneTesting = testProcess.HasExited;
+                            await readFromStream(testProcess.StandardOutput, sbStdOut);
+                            await readFromStream(testProcess.StandardError, sbStdErr);
+                            if (!doneTesting) {
+                                return RunStatus.Running;
+                            }
+                            else {
+                                var exitCode = testProcess.ExitCode;
+                                if (exitCode != 0) {
+                                    this.testResult.Value = new TestResult(
+                                        finished: true,
+                                        success: false,
+                                        exitCode: exitCode,
+                                        testProcess.StartTime,
+                                        testProcess.ExitTime,
+                                        StandardError);
+                                    return RunStatus.WaitingOnParent;
+                                }
+                                else {
+                                    this.testResult.Value = new TestResult(finished: true, success: true, testProcess.ExitCode, testProcess.StartTime, testProcess.ExitTime, StandardOut);
+                                    return RunStatus.WaitingOnParent;
+                                }
+                            }
+                        }
+                    case RunStatus.Paused:
+                        if (shouldResumeOrForce) {
+                            return parentHasCompiled ? RunStatus.Scheduled : RunStatus.WaitingOnParent;
+                        }
+                        else {
+                            return RunStatus.Paused;
+                        }
+                    default:
+                        throw new NotImplementedException(statusWas.ToString());
+                }
+            }
 
             bool startTest(out TestResult failedResult) {
                 lock (lockStringBuilders) {
