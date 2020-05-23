@@ -56,14 +56,13 @@ namespace CSick.Actors._CTests {
                 sourceFile.Value = mySourceFile;
                 triggerUpdate();
             }
-            var compileStatusWas = this.CompileStatus;
 
             var result = mySourceFile.Tests.Select(x => new Role {
                 Id = x.TestNumber,
             });
 
-            var status = CompileStatus;
-            switch (status) {
+            var compileStatusWas = this.CompileStatus;
+            switch (compileStatusWas) {
                 case CompileStatus.Modified:
                     compileResult.Value = new CompileResult(notDone: true);
                     try {
@@ -110,12 +109,14 @@ namespace CSick.Actors._CTests {
                     }
                     break;
                 default:
-                    throw new NotImplementedException(status.ToString("g"));
+                    throw new NotImplementedException(compileStatusWas.ToString("g"));
             }
 
             if (compileStatusWas != CompileStatus) {
                 triggerUpdate();
             }
+
+            return await Task.FromResult(result);
 
             bool startCompile(out CompileResult failedResult) {
                 lock (lockStringBuilders) {
@@ -172,8 +173,6 @@ namespace CSick.Actors._CTests {
             void triggerUpdate() {
                 sendUpdates.Send_UpdateTestsFile(mySourceFile.FileName ?? "");
             }
-
-            return await Task.FromResult(result);
         }
     }
 }

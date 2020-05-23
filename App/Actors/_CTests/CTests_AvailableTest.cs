@@ -48,16 +48,16 @@ namespace CSick.Actors._CTests {
         protected override async Task OnRun(ActorUtil util) {
             var cmds = Commands.DequeueAll();
 
+            var statusWas = this.runStatus.Value;
+
             var compileResult = parentFile.CompileResult;
             var parentHasCompiled = compileResult.Finished && compileResult.Success;
             var parentWasRecompiled = parentHasCompiled && compileResult.TimeStopped != lastKnownParentCompileTime;
             lastKnownParentCompileTime = compileResult.TimeStopped;
 
-            var statusWas = this.runStatus.Value;
-
             var shouldPause = cmds.Any(x => x == CTestCommand.Cancel);
             var shouldResumeOrForce = !shouldPause && cmds.Any(x => x == CTestCommand.Run);
-            switch (RunStatus) {
+            switch (statusWas) {
                 case RunStatus.WaitingOnParent:
                     if (shouldPause) {
                         runStatus.Value = RunStatus.Paused;
@@ -129,6 +129,8 @@ namespace CSick.Actors._CTests {
                 triggerUpdate();
             }
 
+            await Task.FromResult(0);
+
             bool startTest(out TestResult failedResult) {
                 lock (lockStringBuilders) {
                     sbStdOut.Clear();
@@ -196,8 +198,6 @@ namespace CSick.Actors._CTests {
             void triggerUpdate() {
                 sendUpdates.Send_UpdateTest(parentFile.SourceFile.FileName ?? "", this.Id);
             }
-
-            await Task.FromResult(0);
         }
     }
 }
