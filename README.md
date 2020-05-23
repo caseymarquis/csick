@@ -1,6 +1,6 @@
 # CSick
 
-CSick is a testing framework for c. Its sort of like webpack-dev-server, but
+CSick is a testing framework for c. It's sort of like webpack-dev-server, but
 for running tests on c files.
 
 ![Sample Testing Image](https://raw.githubusercontent.com/caseymarquis/csick/master/docs/sample.png)
@@ -11,7 +11,7 @@ for running tests on c files.
 3. When a root test file or a dependency file is modified, CSick recompiles all related tests and runs them again.
 4. The results of this are displayed on a local webpage.
 
-The net result is that as you modify and change your files, test binaries are automatically recompiled to see if your new changes worked.
+The net result is that as you modify and change your files, test binaries are automatically created and run to see if your new changes worked.
 
 ## Getting Started
 
@@ -47,4 +47,4 @@ END_TESTS
 ```
 ## Disclaimer
 
-CSick was written and used for the author's personal projects. It's pretty feature sparse, and will likely only have features added as needed by the author. Pull requests would be welcome, but you're unlikely to request a feature an receive it.
+CSick was written and used for the author's personal projects. It's pretty feature sparse, and will likely only have features added as needed by the author. Pull requests would be welcome, but you're unlikely to request a feature and receive it.
