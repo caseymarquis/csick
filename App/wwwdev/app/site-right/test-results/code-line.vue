@@ -1,5 +1,5 @@
 <template>
-    <div class="code-line" :class="{ 'highlight': highlight }">
+    <div class="code-line" :class="getClass">
         <span v-text="line">
         </span>
     </div>
@@ -7,7 +7,27 @@
 
 <script>
 export default {
-    props: ['line', 'lineNumber', 'highlight'],
+    props: ['line', 'number', 'test'],
+    computed: {
+        getClass(){
+            if(this.number === this.exitCode && this.exitCode !== 0 && this.exitCode < 65000){
+                return { 'highlight-bad': true };
+            }
+            else if(this.number === this.test.lineNumber){
+                if(this.test.testResult.finished){
+                    if(this.test.testResult.success){
+                        return { 'highlight-good': true };
+                    }
+                    else{
+                        return { 'highlight-bad': true };
+                    }
+                }
+            }
+        },
+        exitCode(){
+            return this.test.testResult.exitCode;
+        }
+    },
 }
 </script>
 
@@ -17,8 +37,14 @@ export default {
     padding-top: 0;
 }
 
-.highlight{
+.highlight-bad{
     background: #222;
     color: lightcoral;
 }
+
+.highlight-good{
+    background: #222;
+    color: lightgreen;
+}
+
 </style>

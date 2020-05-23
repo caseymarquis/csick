@@ -15,7 +15,7 @@
             </div>
          </div>
          <div class="line-container">
-            <code-line v-for="(line, $index) in test.lines" :key="$index + 1" :line="line" :number="$index + 1" :highlight="result.exitCode && (($index + 1) === result.exitCode)">
+            <code-line v-for="(line, $index) in test.lines" :key="$index + 1" :line="line" :number="$index + 1" :test="test">
             </code-line>
          </div>
      </div>
@@ -36,6 +36,9 @@ export default {
     },
     created(){
         this.fetchData();
+    },
+    watch: {
+        '$route': 'fetchData',
     },
     computed: {
         result(){
