@@ -8,32 +8,15 @@
                 <span class="header-bright" v-text="test.name"></span>
             </h2>
         </div>
-        <div class="code-container">
-            <div class="number-container">
-                <div
-                    v-for="(line, $index) in test.parent.lines"
-                    :key="$index + 1"
-                    v-text="$index + 1"
-                ></div>
-            </div>
-            <div class="line-container">
-                <code-line
-                    v-for="(line, $index) in test.parent.lines"
-                    :key="$index + 1"
-                    :line="line"
-                    :number="$index + 1"
-                    :test="test"
-                ></code-line>
-            </div>
-        </div>
+        <code-container class="the-code" :testFile="this.test.parent" :tests="[this.test]">
+        </code-container>
     </div>
 </template>
 
 <script>
 import Updates from "../../js/Updates.js";
 import api from "../../js/api.js";
-
-import CodeLine from "./code-line.vue";
+import CodeContainer from "../code-container/code-container.vue";
 
 export default {
     data() {
@@ -62,7 +45,7 @@ export default {
         }
     },
     components: {
-        CodeLine
+        CodeContainer,
     }
 };
 </script>
@@ -90,26 +73,8 @@ export default {
     color: white;
 }
 
-.code-container {
+.the-code {
     overflow: scroll;
     flex-grow: 1;
-
-    display: flex;
-    flex-flow: row nowrap;
-}
-
-.number-container {
-    height: fit-content;
-    background-color: #121417;
-    border-right: solid;
-    border-color: #696969;
-    padding-right: 0.25em;
-}
-
-.line-container {
-    height: fit-content;
-    flex-grow: 1;
-    padding-left: 0.25em;
-    background-color: #121417;
 }
 </style>

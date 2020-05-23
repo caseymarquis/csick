@@ -6,12 +6,16 @@
             </h2>
         </div>
         <pre v-text="result.output"></pre>
+        <code-container class="the-code" :testFile="this.testFile" :tests="this.testFile.tests">
+        </code-container>
     </div>
 </template>
 
 <script>
 import Updates from "../../js/Updates.js";
 import api from "../../js/api.js";
+
+import CodeContainer from "../code-container/code-container.vue";
 
 export default {
     data() {
@@ -39,7 +43,9 @@ export default {
             );
         }
     },
-    components: {}
+    components: {
+        CodeContainer,
+    }
 };
 </script>
 
@@ -66,26 +72,8 @@ export default {
     color: white;
 }
 
-.code-container {
+.the-code {
     overflow: scroll;
     flex-grow: 1;
-
-    display: flex;
-    flex-flow: row nowrap;
-}
-
-.number-container {
-    height: fit-content;
-    background-color: #121417;
-    border-right: solid;
-    border-color: #696969;
-    padding-right: 0.25em;
-}
-
-.line-container {
-    height: fit-content;
-    flex-grow: 1;
-    padding-left: 0.25em;
-    background-color: #121417;
 }
 </style>
