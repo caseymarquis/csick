@@ -12,7 +12,7 @@ extern int buffer_new(Buffer *buffer) {
   int initialSize = 4096;
   buffer->index = 0;
   buffer->capacity = initialSize;
-  buffer->data = (char *)malloc(sizeof(char) * initialSize);
+  buffer->data = malloc(sizeof(char) * initialSize);
   if (buffer->data == NULL) {
     return BUFFER_OUTOFMEMORY;
   }
@@ -23,7 +23,7 @@ extern int buffer_grow(Buffer *buffer) {
   if (buffer == NULL) return BUFFER_WASNULL;
   if (buffer->data == NULL) return BUFFER_DATAWASNULL;
 
-  char *newMem = (char *)malloc(sizeof(char) * buffer->capacity);
+  char *newMem = malloc(sizeof(char) * buffer->capacity);
   memcpy(newMem, buffer, sizeof(char) * buffer->capacity);
   free(buffer->data);
   buffer->data = newMem;
