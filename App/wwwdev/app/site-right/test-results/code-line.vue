@@ -9,12 +9,11 @@ export default {
     props: ["line", "number", "test"],
     computed: {
         getClass() {
-            let isFailedAssert = this.number === this.exitCode &&
-                this.exitCode !== 0 &&
-                this.exitCode < 65000;
-            if (
-               isFailedAssert 
-            ) {
+            let isFailedAssert =
+                this.number === this.exitCode &&
+                this.exitCode !== 0;
+
+            if (isFailedAssert) {
                 return { "highlight-bad": true };
             } else if (this.number === this.test.lineNumber) {
                 if (this.test.testResult.finished) {
@@ -23,6 +22,9 @@ export default {
                     } else {
                         return { "highlight-bad": true };
                     }
+                }
+                else{
+                    return { "highlight-test": true };
                 }
             }
         },
@@ -47,5 +49,10 @@ export default {
 .highlight-good {
     background: #222;
     color: lightgreen;
+}
+
+.highlight-test {
+    background: #222;
+    color: lightskyblue;
 }
 </style>
