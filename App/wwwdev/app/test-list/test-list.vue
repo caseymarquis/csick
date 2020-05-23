@@ -1,9 +1,7 @@
 <template>
     <div class="test-list">
         <div class="header-container">
-            <h2 class="header">
-                Available Test Files
-            </h2>
+            <h2 class="header">Available Test Files</h2>
         </div>
         <div class="test-list-container">
             <test-file v-for="testFile in testFiles" :testFile="testFile" :key="testFile.path"></test-file>

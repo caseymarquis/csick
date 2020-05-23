@@ -1,37 +1,44 @@
 <template>
-  <div id="main-layout">
-    <app-modal v-if="$store.state.modal.show" :title="$store.state.modal.title" :show-cancel="$store.state.modal.showCancel" v-on:close="closeMainModal">
-      <p v-text="$store.state.modal.text"></p>
-    </app-modal>
+    <div id="main-layout">
+        <app-modal
+            v-if="$store.state.modal.show"
+            :title="$store.state.modal.title"
+            :show-cancel="$store.state.modal.showCancel"
+            v-on:close="closeMainModal"
+        >
+            <p v-text="$store.state.modal.text"></p>
+        </app-modal>
 
-    <slide-menu :style="slideDivStyle"></slide-menu>
+        <slide-menu :style="slideDivStyle"></slide-menu>
 
-    <div id="the-nav">
-      <div class="nav-section">
-        <button id="settings-toggle" class="btn btn-primary" v-on:click="toggleSlide">
-            <fa-icon icon="cogs"/>
-        </button>
-        <router-link to="/" id="text-logo">
-            <h1>
-                CSick
-            </h1>
-          <!-- img :src="imgLogo" id="the-logo" / -->
-        </router-link>
-        <h2 id="page-title" class="visible-lg" v-text="pageTitle"></h2>
-      </div>
+        <div id="the-nav">
+            <div class="nav-section">
+                <button id="settings-toggle" class="btn btn-primary" v-on:click="toggleSlide">
+                    <fa-icon icon="cogs" />
+                </button>
+                <router-link to="/" id="text-logo">
+                    <h1>CSick</h1>
+                    <!-- img :src="imgLogo" id="the-logo" / -->
+                </router-link>
+                <h2 id="page-title" class="visible-lg" v-text="pageTitle"></h2>
+            </div>
 
-      <search-bar id="nav-search" :wide="true" v-if="$store.state.search.show" v-model="searchText" placeholder="Search..."></search-bar>
+            <search-bar
+                id="nav-search"
+                :wide="true"
+                v-if="$store.state.search.show"
+                v-model="searchText"
+                placeholder="Search..."
+            ></search-bar>
 
-      <div class="nav-section">
-      </div>
+            <div class="nav-section"></div>
+        </div>
+
+        <div id="site-container" :style="mainDivStyle">
+            <test-list id="test-list"></test-list>
+            <router-view id="the-router"></router-view>
+        </div>
     </div>
-
-    <div id="site-container" :style="mainDivStyle">
-      <test-list id="test-list">
-      </test-list>
-      <router-view id="the-router"></router-view>
-    </div>
-  </div>
 </template>
 
 <script>
@@ -75,11 +82,11 @@ export default {
                 this.$store.commit("setSearchText", text);
             }
         },
-        mainDivStyle(){
-            return { height: `${this.$store.state.screenHeight}px` } 
+        mainDivStyle() {
+            return { height: `${this.$store.state.screenHeight}px` };
         },
-        slideDivStyle(){
-            return { height: `${this.$store.state.screenHeight}px` } 
+        slideDivStyle() {
+            return { height: `${this.$store.state.screenHeight}px` };
         }
     },
     methods: {
@@ -87,13 +94,13 @@ export default {
             this.$store.commit("toggleSlide");
         },
         updateScreenHeight() {
-            let navEl = document.getElementById('the-nav');
-            if(!navEl){
+            let navEl = document.getElementById("the-nav");
+            if (!navEl) {
                 return;
             }
             let newVal = window.innerHeight - navEl.clientHeight;
-            if(newVal !== this.$store.state.screenHeight){
-                this.$store.commit('setScreenHeight', newVal);
+            if (newVal !== this.$store.state.screenHeight) {
+                this.$store.commit("setScreenHeight", newVal);
             }
         }
     },
@@ -107,119 +114,119 @@ export default {
 
 <style scoped>
 #main-layout {
-  display: flex;
-  flex-flow: column nowrap;
-  padding-top: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    padding-top: 0;
 }
 
 #print-header {
-  font-size: xx-large;
-  margin-left: 10px;
-  display: inline-block;
-  border-bottom: solid;
+    font-size: xx-large;
+    margin-left: 10px;
+    display: inline-block;
+    border-bottom: solid;
 }
 
 #the-nav {
-  display: none !important;
-  position: fixed;
-  top: 0;
-  z-index: 5;
-  width: 100%;
-  height: 50px;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #2c3e50;
+    display: none !important;
+    position: fixed;
+    top: 0;
+    z-index: 5;
+    width: 100%;
+    height: 50px;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2c3e50;
 }
 
 .nav-section {
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  justify-content: space-around;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-around;
 }
 
-#text-logo, #text-logo > h1 {
+#text-logo,
+#text-logo > h1 {
     color: white;
     text-decoration: none;
     font-size: 1.25em;
 }
 
-#text-logo:hover{
+#text-logo:hover {
     text-decoration: none;
 }
 
 #nav-search {
-  flex-shrink: 1;
-  max-width: 400px;
+    flex-shrink: 1;
+    max-width: 400px;
 }
 
 .nav-section > * {
-  margin-right: 1em;
+    margin-right: 1em;
 }
 
 .nav-link {
-  text-decoration: none;
-  color: white;
-  font-weight: normal;
+    text-decoration: none;
+    color: white;
+    font-weight: normal;
 }
 
 .nav-link:hover {
-  color: lightgray;
+    color: lightgray;
 }
 
 #report-title {
-  margin-left: 2em;
-  margin-bottom: 0;
-  font-weight: bold;
-  font-size: x-large;
+    margin-left: 2em;
+    margin-bottom: 0;
+    font-weight: bold;
+    font-size: x-large;
 }
 
 #page-title {
-  color: white;
-  text-shadow: black 2px 2px;
-  font-size: x-large;
-  border-top: solid;
-  border-bottom: solid;
-  border-width: 1px;
+    color: white;
+    text-shadow: black 2px 2px;
+    font-size: x-large;
+    border-top: solid;
+    border-bottom: solid;
+    border-width: 1px;
 }
 
 #site-container {
-  position: relative;
-  display: flex;
-  flex-flow: row nowrap;
+    position: relative;
+    display: flex;
+    flex-flow: row nowrap;
 }
 
-#test-list{
-  height: 100%;
+#test-list {
+    height: 100%;
 }
 
-#the-router{
-  height: 100%;
-  flex-grow: 1;
+#the-router {
+    height: 100%;
+    flex-grow: 1;
 }
-
 
 @media (max-width: 720px) {
-  #the-logo {
-    display: none;
-  }
+    #the-logo {
+        display: none;
+    }
 }
 @media (max-width: 1200px) {
-  #the-logo {
-    height: 35px;
-  }
-  .nav-link {
-    font-size: 1em;
-  }
+    #the-logo {
+        height: 35px;
+    }
+    .nav-link {
+        font-size: 1em;
+    }
 }
 @media (min-width: 1200px) {
-  #the-logo {
-    height: 45px;
-  }
-  .nav-link {
-    font-size: 1.25em;
-  }
+    #the-logo {
+        height: 45px;
+    }
+    .nav-link {
+        font-size: 1.25em;
+    }
 }
 </style>

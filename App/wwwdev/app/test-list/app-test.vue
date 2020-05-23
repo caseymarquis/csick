@@ -1,63 +1,59 @@
 <template>
-<router-link :to="myUri" class="app-test">
-    <button class="btn btn-dark" :class="classFromStatus">
-        <div>
-            <fa-icon class="the-icon" icon="chevron-right"/>
-            <span class="name" v-text="test.name">
-            </span>
-        </div>
-        <div class="status-background">
-            <span class="status-text" v-text="status">
-            </span>
-        </div>
-    </button>
-</router-link>
+    <router-link :to="myUri" class="app-test">
+        <button class="btn btn-dark" :class="classFromStatus">
+            <div>
+                <fa-icon class="the-icon" icon="chevron-right" />
+                <span class="name" v-text="test.name"></span>
+            </div>
+            <div class="status-background">
+                <span class="status-text" v-text="status"></span>
+            </div>
+        </button>
+    </router-link>
 </template>
 
 <script>
 export default {
-    props: ['test', 'testFile'],
+    props: ["test", "testFile"],
     computed: {
-        status(){
+        status() {
             let status = this.test.runStatus;
             let result = this.test.testResult;
-            switch(status){
-                case 'WaitingOnParent':
-                    if(!result.finished){
-                        return 'Waiting on Compile';
-                    }
-                    else{
-                        if(result.success){
-                            return 'Pass';
-                        }
-                        else{
-                            return 'Fail';
+            switch (status) {
+                case "WaitingOnParent":
+                    if (!result.finished) {
+                        return "Waiting on Compile";
+                    } else {
+                        if (result.success) {
+                            return "Pass";
+                        } else {
+                            return "Fail";
                         }
                     }
             }
             return this.test.runStatus;
         },
-        classFromStatus(){
+        classFromStatus() {
             return {
-                'passed': this.status === 'Pass',
-                'failed': this.status === 'Fail',
-                'btn-info': this.selected,
-                'btn-dark': !this.selected,
-            }
+                passed: this.status === "Pass",
+                failed: this.status === "Fail",
+                "btn-info": this.selected,
+                "btn-dark": !this.selected
+            };
         },
-        myUri(){
+        myUri() {
             return `/${this.testFile.pathHash}/${this.test.testNumber}`;
         },
-        selected(){
+        selected() {
             return this.$route.params.testNumber == this.test.testNumber;
-        },
+        }
     },
     methods: {
-        onClick(){
-            this.$emit('select', this.test.testNumber);
+        onClick() {
+            this.$emit("select", this.test.testNumber);
         }
     }
-}
+};
 </script>
 
 <style scoped>
@@ -67,7 +63,7 @@ export default {
 }
 
 .app-test > button {
-    padding: .25em;
+    padding: 0.25em;
     flex-grow: 1;
 
     display: flex;
@@ -78,8 +74,8 @@ export default {
 
 .status-background {
     background: #788086;
-    border-radius: .5em;
-    padding: 0 .25em .1em .25em;
+    border-radius: 0.5em;
+    padding: 0 0.25em 0.1em 0.25em;
     text-shadow: black 1px 1px 2px;
     border: solid;
     border-width: 1px;
@@ -108,7 +104,7 @@ export default {
     font-weight: bold;
 }
 
-.name{
+.name {
     color: white;
 }
 </style>

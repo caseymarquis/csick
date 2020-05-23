@@ -13,10 +13,10 @@ const api = {
     post: function (url, payload) {
         return getOrPost(url, payload, axios.post);
     },
-    put: function (url, payload){
+    put: function (url, payload) {
         return getOrPost(url, payload, axios.put);
     },
-    delete: function(url, payload){
+    delete: function (url, payload) {
         return getOrPost(url, payload, axios.delete);
     }
 };

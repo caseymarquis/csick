@@ -33,87 +33,87 @@ let Util = {
 
         return copyTextToClipboardInternal(text);
     },
-    getFirstNameLastInitial(fullName){
+    getFirstNameLastInitial(fullName) {
         let split = fullName.split(' ').filter(x => x.trim());
         let first = (split[0].length > 0 ? split[0] + ' ' : '');
-        if(split.length <= 1){
+        if (split.length <= 1) {
             return first;
         }
-        let last = split[split.length -1][0];
-        if(last === undefined){
+        let last = split[split.length - 1][0];
+        if (last === undefined) {
             return first;
         }
         return (first + last + '.')
     },
-    minutesToTimeString(minutes, showSeconds){
-        let seconds = Math.round(60*(minutes - Math.floor(minutes)));
+    minutesToTimeString(minutes, showSeconds) {
+        let seconds = Math.round(60 * (minutes - Math.floor(minutes)));
         minutes = Math.floor(minutes);
-        let showHours = Math.floor(minutes/60);
+        let showHours = Math.floor(minutes / 60);
         let showMinutes = minutes % 60;
-        if(showSeconds){
-            return `${showHours}:${showMinutes <= 9? '0' : ''}${showMinutes}:${seconds <= 9? '0' : ''}${seconds}`;
+        if (showSeconds) {
+            return `${showHours}:${showMinutes <= 9 ? '0' : ''}${showMinutes}:${seconds <= 9 ? '0' : ''}${seconds}`;
         }
-        else{
-            return `${showHours}H ${showMinutes <= 9? '0' : ''}${showMinutes}M`;
+        else {
+            return `${showHours}H ${showMinutes <= 9 ? '0' : ''}${showMinutes}M`;
         }
     },
-    timeRangeToShortString(start, end){
+    timeRangeToShortString(start, end) {
         start = new moment(start);
         end = new moment(end);
         let now = new moment();
         let isToday = start.isSame(now, "day");
 
-        if(start.isSame(now, "day")){
+        if (start.isSame(now, "day")) {
             return `${start.format('hA')} to ${end.format('hA')}`;
         }
-        else if(start.isSame(end, "day")){
+        else if (start.isSame(end, "day")) {
             return `${start.format('MM/DD hA')} to ${end.format('hA')}`;
         }
-        else{
+        else {
             return `${start.format('MM/DD hA')} to ${end.format('MM/DD hA')}`;
         }
     },
-    parseInt(numberString, defaultValue){
-        if(defaultValue === undefined){
+    parseInt(numberString, defaultValue) {
+        if (defaultValue === undefined) {
             defaultValue = 0;
         }
         let ret = window.parseInt(numberString, 10);
-        if(isNaN(ret)){
+        if (isNaN(ret)) {
             return defaultValue;
         }
         return ret;
     },
-    parseFloat(numberString, defaultValue){
-        if(defaultValue === undefined){
+    parseFloat(numberString, defaultValue) {
+        if (defaultValue === undefined) {
             defaultValue = 0;
         }
         let ret = window.parseFloat(numberString);
-        if(isNaN(ret)){
+        if (isNaN(ret)) {
             return defaultValue;
         }
         return ret;
     },
-    scrollTo(elementId){
+    scrollTo(elementId) {
         let timeout = 1;
         let doScroll = () => {
             let el = document.getElementById(elementId);
-            if(el){
+            if (el) {
                 el.scrollIntoView();
             }
-            else{
-                timeout *=2;
-                if(timeout < 500){
+            else {
+                timeout *= 2;
+                if (timeout < 500) {
                     setTimeout(doScroll, timeout);
                 }
             }
         }
         doScroll();
     },
-    significant(number){
-        if(number > 10){
+    significant(number) {
+        if (number > 10) {
             return Math.round(number);
         }
-        else{
+        else {
             return number.toFixed(1);
         }
     },

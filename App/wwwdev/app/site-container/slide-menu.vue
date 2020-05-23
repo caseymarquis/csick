@@ -32,11 +32,9 @@ import { setInterval } from "timers";
 
 export default {
     props: [],
-    created() {
-    },
+    created() {},
     data() {
-        return {
-        };
+        return {};
     },
     watch: {},
     computed: {

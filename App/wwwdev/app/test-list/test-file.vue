@@ -78,15 +78,15 @@ export default {
         getClassFromStatus() {
             switch (this.status) {
                 case "Failed to Compile":
-                    return { "failed": true };
+                    return { failed: true };
                 case "Pass":
-                    return { 'passed': true };
+                    return { passed: true };
                 case "Fail":
-                    return { 'failed': true };
+                    return { failed: true };
                 case "Partial Pass":
                     return { "passed-partial": true };
             }
-            return { "other": true };
+            return { other: true };
         }
     },
     components: {
@@ -147,8 +147,8 @@ export default {
 .status-background {
     margin-left: 1em;
     background-color: #272b30;
-    border-radius: .5em;
-    padding: 0 .25em .1em .25em;
+    border-radius: 0.5em;
+    padding: 0 0.25em 0.1em 0.25em;
     text-shadow: black 1px 1px 2px;
     border: solid;
     border-width: 1px;

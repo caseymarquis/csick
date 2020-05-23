@@ -1,10 +1,22 @@
 <template>
-  <div class="component" :class="{'wide-search': wide}">
-    <input :id="id" class="search-input" :class="{'bold-placeholder': boldPlaceholder}" type="text" autocomplete="off" :placeholder="placeholder" v-model="searchText" v-on:keyup="raiseSearch" v-on:blur="onBlur" v-on:focus="onFocus" @click="onClick" />
-    <button class="btn btn-secondary search-btn" v-on:click="raiseSearch">
-      <fa-icon icon="search" size="lg" />
-    </button>
-  </div>
+    <div class="component" :class="{'wide-search': wide}">
+        <input
+            :id="id"
+            class="search-input"
+            :class="{'bold-placeholder': boldPlaceholder}"
+            type="text"
+            autocomplete="off"
+            :placeholder="placeholder"
+            v-model="searchText"
+            v-on:keyup="raiseSearch"
+            v-on:blur="onBlur"
+            v-on:focus="onFocus"
+            @click="onClick"
+        />
+        <button class="btn btn-secondary search-btn" v-on:click="raiseSearch">
+            <fa-icon icon="search" size="lg" />
+        </button>
+    </div>
 </template>
 
 <script>
@@ -13,89 +25,96 @@ import router from "../js/router.js";
 let searchIdSuffix = 0;
 
 export default {
-  props: ["value", "placeholder", "wide", "focusOnMounted", "boldPlaceholder", "syncToUrl", "urlId"],
-  data() {
-    searchIdSuffix++;
-    return {
-      id: `app-search-input-${searchIdSuffix}`,
-      searchText: "",
-      searchSequence: 0,
-    }
-  },
-  created() {
-    if(this.syncToUrl){
-      this.setFromQuery();
-    }
-    else{
-      this.searchText = (this.value || "");
-    }
-  },
-  mounted() {
-    if (this.focusOnMounted) {
-      let el = document.getElementById(this.id);
-      if (el) {
-        el.focus();
-      }
-    }
-  },
-  watch: {
-    'value': 'updateInternalValue'
-  },
-  computed: {
-    actualUrlId(){
-      return this.urlId || "searchbar"
-    }
-  },
-  methods: {
-    raiseSearch() {
-      this.searchSequence++;
-      let searchSequenceWas = this.searchSequence;
-      setTimeout(() => {
-        if (this.searchSequence === searchSequenceWas) {
-          this.$emit("search", this.searchText);
-          this.$emit("input", this.searchText);
-          this.setQuery(this.searchText);
+    props: [
+        "value",
+        "placeholder",
+        "wide",
+        "focusOnMounted",
+        "boldPlaceholder",
+        "syncToUrl",
+        "urlId"
+    ],
+    data() {
+        searchIdSuffix++;
+        return {
+            id: `app-search-input-${searchIdSuffix}`,
+            searchText: "",
+            searchSequence: 0
+        };
+    },
+    created() {
+        if (this.syncToUrl) {
+            this.setFromQuery();
+        } else {
+            this.searchText = this.value || "";
         }
-      }, 400);
     },
-    onClick() {
-      this.$emit('click', this.searchText);
+    mounted() {
+        if (this.focusOnMounted) {
+            let el = document.getElementById(this.id);
+            if (el) {
+                el.focus();
+            }
+        }
     },
-    onBlur() {
-      this.$emit('blur', this.searchText);
+    watch: {
+        value: "updateInternalValue"
     },
-    onFocus() {
-      this.$emit('focus', this.searchText);
+    computed: {
+        actualUrlId() {
+            return this.urlId || "searchbar";
+        }
     },
-    updateInternalValue() {
-      this.setQuery(this.value);
-      this.searchText = this.value;
-    },
-    setQuery(value){
-      if(this.syncToUrl){
-        let obj = {};
-        obj[this.actualUrlId] = value;
-        router.appendQuery(this, obj);
-      }
-    },
-    setFromQuery(){
-      if(this.syncToUrl){
-        this.searchText = this.$route.query[this.actualUrlId];
-        this.raiseSearch();
-      }
-    },
-  }
-}
+    methods: {
+        raiseSearch() {
+            this.searchSequence++;
+            let searchSequenceWas = this.searchSequence;
+            setTimeout(() => {
+                if (this.searchSequence === searchSequenceWas) {
+                    this.$emit("search", this.searchText);
+                    this.$emit("input", this.searchText);
+                    this.setQuery(this.searchText);
+                }
+            }, 400);
+        },
+        onClick() {
+            this.$emit("click", this.searchText);
+        },
+        onBlur() {
+            this.$emit("blur", this.searchText);
+        },
+        onFocus() {
+            this.$emit("focus", this.searchText);
+        },
+        updateInternalValue() {
+            this.setQuery(this.value);
+            this.searchText = this.value;
+        },
+        setQuery(value) {
+            if (this.syncToUrl) {
+                let obj = {};
+                obj[this.actualUrlId] = value;
+                router.appendQuery(this, obj);
+            }
+        },
+        setFromQuery() {
+            if (this.syncToUrl) {
+                this.searchText = this.$route.query[this.actualUrlId];
+                this.raiseSearch();
+            }
+        }
+    }
+};
 </script>
 
 <style scoped>
 .component {
-  display: flex;
-  flex-flow: row nowrap;
+    display: flex;
+    flex-flow: row nowrap;
 }
 
 .wide-search {
-  flex-grow: 1;
+    flex-grow: 1;
 }
 
 .search-input {
@@ -110,15 +129,15 @@ export default {
 }
 
 .bold-placeholder::placeholder {
-  font-weight: bold;
+    font-weight: bold;
 }
 .bold-placeholder::-webkit-input-placeholder {
-  font-weight: bold;
+    font-weight: bold;
 }
 .bold-placeholder::-moz-placeholder {
-  font-weight: bold;
+    font-weight: bold;
 }
 .bold-placeholder::-ms-placeholder {
-  font-weight: bold;
+    font-weight: bold;
 }
 </style>

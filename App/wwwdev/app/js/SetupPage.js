@@ -9,9 +9,9 @@ let SetupPage = {
         store.commit("setPageFluid", false);
         return SetupPage;
     },
-    search(vm, placeholder, text){
+    search(vm, placeholder, text) {
         let search = vm.$route.query.search;
-        if(!search){
+        if (!search) {
             search = text;
         }
         store.commit("setupSearch", {
@@ -21,7 +21,7 @@ let SetupPage = {
         });
         return SetupPage;
     },
-    fluid(){
+    fluid() {
         store.commit("setPageFluid", true);
     },
 }

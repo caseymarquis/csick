@@ -56,13 +56,13 @@ export default {
     overflow-x: hidden;
 }
 
-.the-header{
+.the-header {
     $header-padding: 5px;
     padding-top: $header-padding;
     padding-bottom: $header-padding;
 }
 
-.the-title{
+.the-title {
     font-size: large;
 }
 </style>

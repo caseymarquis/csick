@@ -51,7 +51,7 @@ const store = new Vuex.Store({
         clearLoginMessage(state) {
             state.loginMessage = "";
         },
-        setModal(state, modal){
+        setModal(state, modal) {
             state.modal = modal;
         },
         setPageTitle(state, title) {
@@ -60,34 +60,34 @@ const store = new Vuex.Store({
             }
             state.pageTitle = title;
         },
-        setPageFluid(state, value){
+        setPageFluid(state, value) {
             state.pageFluid = value;
         },
-        setScreenHeight(state, height){
+        setScreenHeight(state, height) {
             state.screenHeight = height;
         },
-        setupSearch(state, search){
-            if(!search.placeholder){
+        setupSearch(state, search) {
+            if (!search.placeholder) {
                 search.placeholder = "Search..."
             }
-            if(!search.text){
+            if (!search.text) {
                 search.text = "";
             }
-            if(search.show === undefined || search.show === null){
+            if (search.show === undefined || search.show === null) {
                 search.show = true;
             }
             state.search = search;
         },
-        setSearchText(state, text){
-            if(!text){
+        setSearchText(state, text) {
+            if (!text) {
                 text = "";
             }
             state.search.text = text;
         },
-        setupSlide(state){
+        setupSlide(state) {
             state.slide.visible = false;
         },
-        toggleSlide(state){
+        toggleSlide(state) {
             state.slide.visible = !state.slide.visible;
             state.slide.hasEntered = true;
         },

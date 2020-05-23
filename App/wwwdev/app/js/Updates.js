@@ -22,11 +22,11 @@ function loadSignalr() {
                 let splitUpdate = update.split('|');
                 let group = splitUpdate[0];
                 let cmd = splitUpdate[1];
-                if(group === 'ping'){
-                    if(currentServerId === null){
+                if (group === 'ping') {
+                    if (currentServerId === null) {
                         currentServerId = cmd;
                     }
-                    else if(currentServerId !== cmd){
+                    else if (currentServerId !== cmd) {
                         //We've connected to a different webserver:
                         currentServerId = cmd;
                         renewSubscriptionsOnNewWebServer();
@@ -35,7 +35,7 @@ function loadSignalr() {
                 }
                 subscribers.forEach(function (subscriber) {
                     try {
-                        if(subscriber.__subscribedGroups && subscriber.__subscribedGroups.includes(group)){
+                        if (subscriber.__subscribedGroups && subscriber.__subscribedGroups.includes(group)) {
                             subscriber.processUpdate(group, cmd);
                         }
                     }
@@ -55,13 +55,13 @@ function loadSignalr() {
         console.log("SignalR Started Successfully");
     });
 
-    function renewSubscriptionsOnNewWebServer(){
+    function renewSubscriptionsOnNewWebServer() {
         let subscriberList = new Set();
         subscribers.forEach(function (subscriber) {
             try {
-                if(subscriber.__subscribedGroups){
+                if (subscriber.__subscribedGroups) {
                     subscriber.__subscribedGroups.forEach(group => {
-                        if(group && (typeof(group) === 'string')){
+                        if (group && (typeof (group) === 'string')) {
                             subscriberList.add(group);
                         }
                     });
@@ -77,20 +77,20 @@ function loadSignalr() {
 
 setInterval(checkIfNeedRestart, 5000);
 function checkIfNeedRestart() {
-    if(!haveReceivedUpdate){
+    if (!haveReceivedUpdate) {
         //If updates were never working, let's not raise an alarm.
         //Maybe we should?
         return;
     }
     var now = new Date().getTime();
     if ((now - lastUpdateReceived) > (1000 * 30)) {
-        if(!inFailedState){
+        if (!inFailedState) {
             //Send a single warning when we enter the failed state.
             alert("Server connection lost. Please refresh the application to restore real-time updates.");
         }
         inFailedState = true;
     }
-    else{
+    else {
         inFailedState = false;
     }
 }
@@ -112,15 +112,15 @@ let Updates = {
         }
     */
     register(subscriber, groups) {
-        Updates.whenSignalrReady(()=>{
+        Updates.whenSignalrReady(() => {
             subscriber.__subscribedGroups = groups;
             groups.forEach((group) => {
                 let numSubscribers = subscribedGroups[group];
-                if(numSubscribers === undefined){
+                if (numSubscribers === undefined) {
                     numSubscribers = 0;
                 }
 
-                if(numSubscribers === 0){
+                if (numSubscribers === 0) {
                     connection.invoke("subscribe", group);
                 }
                 subscribedGroups[group] = (numSubscribers + 1);
@@ -131,21 +131,21 @@ let Updates = {
     remove(subscriber) {
         Updates.whenSignalrReady(() => {
             let groups = subscriber.__subscribedGroups;
-            if(groups === undefined){
+            if (groups === undefined) {
                 //Would happen if signalr never loaded. Overall means there's nothing to unsubscribe.
                 return;
             }
 
-            if(subscribers.delete(subscriber)){
+            if (subscribers.delete(subscriber)) {
                 groups.forEach((group) => {
                     let numSubscribers = subscribedGroups[group];
-                    if(numSubscribers === undefined || numSubscribers <= 0){
+                    if (numSubscribers === undefined || numSubscribers <= 0) {
                         numSubscribers = 0;
                     }
-                    else{
+                    else {
                         numSubscribers--;
                     }
-                    if(numSubscribers === 0){
+                    if (numSubscribers === 0) {
                         connection.invoke('unsubscribe', group);
                     }
                     subscribedGroups[group] = numSubscribers;
@@ -153,19 +153,19 @@ let Updates = {
             }
         })
     },
-    whenSignalrReady(doThis){
+    whenSignalrReady(doThis) {
         let tries = 0;
         doThisIfReady();
-        function doThisIfReady(){
-            if(signalrReady){
+        function doThisIfReady() {
+            if (signalrReady) {
                 doThis();
             }
-            else{
+            else {
                 tries++;
-                if(tries > 10){
+                if (tries > 10) {
                     throw new Error("Signalr hub never loaded.");
                 }
-                else{
+                else {
                     setTimeout(doThisIfReady, 500);
                 }
             }

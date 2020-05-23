@@ -4,47 +4,47 @@
             <div class="form-inline d-flex the-form">
                 <template v-if="type==='password'">
                     <div class="form-group a-form-group">
-                            <label v-text="title + ':'"></label>
-                            <template v-if="state === 'edit' || !passwordResetOnEdit">
-                                <a v-if="!showHidden" style="color: blue">
-                                    <span
-                                        v-if="type==='password'"
-                                        v-on:click="showHidden = true"
-                                    >Click to Reset</span>
-                                </a>
-                            </template>
-                            <button
-                                class="help-btn btn btn-sm btn-info"
-                                v-on:click="showHelp = !showHelp"
-                            >
-                                <fa-icon icon="question" />
-                            </button>
+                        <label v-text="title + ':'"></label>
+                        <template v-if="state === 'edit' || !passwordResetOnEdit">
+                            <a v-if="!showHidden" style="color: blue">
+                                <span
+                                    v-if="type==='password'"
+                                    v-on:click="showHidden = true"
+                                >Click to Reset</span>
+                            </a>
+                        </template>
+                        <button
+                            class="help-btn btn btn-sm btn-info"
+                            v-on:click="showHelp = !showHelp"
+                        >
+                            <fa-icon icon="question" />
+                        </button>
                     </div>
                     <div class="form-group a-form-group" v-if="showHidden">
-                            <password-edit
-                                v-model="internalValue"
-                                :allow-empty-password="allowEmptyPassword"
-                                v-on:cancel="showHidden = !showHidden"
-                                v-on:confirm="onConfirmPassword"
-                            ></password-edit>
+                        <password-edit
+                            v-model="internalValue"
+                            :allow-empty-password="allowEmptyPassword"
+                            v-on:cancel="showHidden = !showHidden"
+                            v-on:confirm="onConfirmPassword"
+                        ></password-edit>
                     </div>
                 </template>
                 <template v-else-if="type==='clickToShow'">
                     <div class="form-group a-form-group">
-                            <button
-                                class="help-btn btn btn-sm btn-info"
-                                v-on:click="showHelp = !showHelp"
-                            >
-                                <fa-icon icon="question" />
-                            </button>
-                            <label v-text="title + ':'"></label>
-                            <a>
-                                <span
-                                    v-if="showHidden"
-                                    v-on:click="showHidden = !showHidden"
-                                >Click to Hide</span>
-                                <span v-else v-on:click="showHidden = !showHidden">Click to Show</span>
-                            </a>
+                        <button
+                            class="help-btn btn btn-sm btn-info"
+                            v-on:click="showHelp = !showHelp"
+                        >
+                            <fa-icon icon="question" />
+                        </button>
+                        <label v-text="title + ':'"></label>
+                        <a>
+                            <span
+                                v-if="showHidden"
+                                v-on:click="showHidden = !showHidden"
+                            >Click to Hide</span>
+                            <span v-else v-on:click="showHidden = !showHidden">Click to Show</span>
+                        </a>
                     </div>
                     <div class="form-group a-form-group" v-if="showHidden">
                         <div class="col-12">
@@ -54,86 +54,83 @@
                 </template>
                 <template v-else>
                     <div class="form-group a-form-group">
-                            <label v-text="title + ':'"></label>
-                            <span
-                                v-if="state !== 'edit' && type !== 'custom'"
-                                v-text="getDisplayText"
-                            ></span>
+                        <label v-text="title + ':'"></label>
+                        <span v-if="state !== 'edit' && type !== 'custom'" v-text="getDisplayText"></span>
 
-                            <input
-                                v-if="state === 'edit' && type==='bool'"
-                                type="checkbox"
-                                class="settings-checkbox"
-                                style="margin-left: 10px; margin-right: 10px;"
-                                v-model="internalValue"
-                            />
+                        <input
+                            v-if="state === 'edit' && type==='bool'"
+                            type="checkbox"
+                            class="settings-checkbox"
+                            style="margin-left: 10px; margin-right: 10px;"
+                            v-model="internalValue"
+                        />
 
-                            <button
-                                class="help-btn btn btn-sm btn-info"
-                                v-on:click="showHelp = !showHelp"
-                            >
-                                <fa-icon icon="question" />
-                            </button>
+                        <button
+                            class="help-btn btn btn-sm btn-info"
+                            v-on:click="showHelp = !showHelp"
+                        >
+                            <fa-icon icon="question" />
+                        </button>
 
-                            <slot name="display" v-if="state !== 'edit' && type === 'custom'"></slot>
-                            <button
-                                v-if="highlightText"
-                                v-on:click="showHighlightDescription = !showHighlightDescription"
-                                class="btn btn-sm btn-info btn-highlight"
-                            >
-                                <fa-icon class="exclamation"></fa-icon>
-                            </button>
+                        <slot name="display" v-if="state !== 'edit' && type === 'custom'"></slot>
+                        <button
+                            v-if="highlightText"
+                            v-on:click="showHighlightDescription = !showHighlightDescription"
+                            class="btn btn-sm btn-info btn-highlight"
+                        >
+                            <fa-icon class="exclamation"></fa-icon>
+                        </button>
                     </div>
                     <div class="form-group a-form-group" v-if="state === 'edit' && type !== 'bool'">
-                            <select
-                                v-if="type==='enum'"
-                                type="checkbox"
-                                class="form-control"
-                                v-model="internalValue"
-                            >
-                                <option v-for="option in options" v-text="option" :key="option"></option>
-                            </select>
-                            <input
-                                v-else-if="type==='int'"
-                                type="number"
-                                step="1"
-                                class="form-control"
-                                v-model="internalValue"
-                            />
-                            <input
-                                v-else-if="type==='nat'"
-                                type="number"
-                                min="0"
-                                step="1"
-                                class="form-control"
-                                v-model="internalValue"
-                            />
-                            <input
-                                v-else-if="type==='float'"
-                                type="number"
-                                class="form-control"
-                                v-model="internalValue"
-                            />
-                            <input
-                                v-else-if="type==='clickToShow'"
-                                type="password"
-                                class="form-control wide-input"
-                                v-model="internalValue"
-                            />
-                            <input
-                                v-else-if="type==='password'"
-                                type="password"
-                                class="form-control wide-input"
-                                v-model="internalValue"
-                            />
-                            <date-time-picker v-else-if="type==='date'" v-model="asmoment"></date-time-picker>
-                            <input
-                                v-else-if="type!=='custom'"
-                                type="text"
-                                class="form-control wide-input"
-                                v-model="internalValue"
-                            />
-                            <slot name="edit" v-else></slot>
+                        <select
+                            v-if="type==='enum'"
+                            type="checkbox"
+                            class="form-control"
+                            v-model="internalValue"
+                        >
+                            <option v-for="option in options" v-text="option" :key="option"></option>
+                        </select>
+                        <input
+                            v-else-if="type==='int'"
+                            type="number"
+                            step="1"
+                            class="form-control"
+                            v-model="internalValue"
+                        />
+                        <input
+                            v-else-if="type==='nat'"
+                            type="number"
+                            min="0"
+                            step="1"
+                            class="form-control"
+                            v-model="internalValue"
+                        />
+                        <input
+                            v-else-if="type==='float'"
+                            type="number"
+                            class="form-control"
+                            v-model="internalValue"
+                        />
+                        <input
+                            v-else-if="type==='clickToShow'"
+                            type="password"
+                            class="form-control wide-input"
+                            v-model="internalValue"
+                        />
+                        <input
+                            v-else-if="type==='password'"
+                            type="password"
+                            class="form-control wide-input"
+                            v-model="internalValue"
+                        />
+                        <date-time-picker v-else-if="type==='date'" v-model="asmoment"></date-time-picker>
+                        <input
+                            v-else-if="type!=='custom'"
+                            type="text"
+                            class="form-control wide-input"
+                            v-model="internalValue"
+                        />
+                        <slot name="edit" v-else></slot>
                     </div>
                 </template>
             </div>
@@ -297,7 +294,7 @@ export default {
     border-width: 1px;
 }
 
-.col-main{
+.col-main {
     display: flex;
     flex-direction: column;
     padding-left: 10px;
@@ -330,13 +327,13 @@ label {
     padding: 0 2px 0 2px;
 }
 
-.the-form{
+.the-form {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 
-.a-form-group{
+.a-form-group {
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
