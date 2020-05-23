@@ -11,10 +11,10 @@ export default {
         getClass() {
             for(let i = 0; i < this.tests.length; i++){
                 let test = this.tests[i];
-                let exitCode = test.exitCode;
+                let exitCode = test.testResult.exitCode;
                 let isFailedAssert =
-                    this.number === this.exitCode &&
-                    this.exitCode !== 0;
+                    this.number === exitCode &&
+                    exitCode !== 0;
 
                 if (isFailedAssert) {
                     return { "highlight-bad": true };
