@@ -11,11 +11,11 @@
      </div>
      <div class="code-container">
          <div class="number-container">
-            <div v-for="(line, $index) in test.lines" :key="$index + 1" v-text="$index + 1">
+            <div v-for="(line, $index) in test.parent.lines" :key="$index + 1" v-text="$index + 1">
             </div>
          </div>
          <div class="line-container">
-            <code-line v-for="(line, $index) in test.lines" :key="$index + 1" :line="line" :number="$index + 1" :test="test">
+            <code-line v-for="(line, $index) in test.parent.lines" :key="$index + 1" :line="line" :number="$index + 1" :test="test">
             </code-line>
          </div>
      </div>

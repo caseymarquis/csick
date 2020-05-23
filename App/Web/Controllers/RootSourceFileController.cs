@@ -34,7 +34,7 @@ namespace CSick.Web.Controllers {
             };
         }
 
-        private List<Web_RootSourceFile> getRootSourceFiles(Func<CTests_AvailableTestFile, bool> predicate, bool includeOutput, int? withTestNumber) {
+        private async Task<List<Web_RootSourceFile>> getRootSourceFiles(Func<CTests_AvailableTestFile, bool> predicate, bool includeOutput, bool includeFileContent, int? withTestNumber) {
             var rootFileActors = testFiles.Actors_Where(predicate);
             var ret = rootFileActors.Select(x => {
                 var sourceFile = x.SourceFile;
@@ -59,36 +59,54 @@ namespace CSick.Web.Controllers {
                         .ToList(),
                 };
             }).OrderBy(x => x.path).ToList();
+
+            if (includeFileContent) {
+                foreach (var result in ret) {
+                    try {
+                        result.lines = (await System.IO.File.ReadAllLinesAsync(result.path))
+                            .Select(x => string.IsNullOrEmpty(x) ? " " : x)
+                            .ToArray();
+                    }
+                    catch (Exception ex) {
+                        result.lines = new string[] { $"Failed to get text: {ex.Message}" };
+                    }
+                }
+            }
+
             return ret;
         }
 
         [HttpGet]
         [Route("api/v1/RootSourceFile")]
-        public List<Web_RootSourceFile> RootSourceFileList() {
-            return getRootSourceFiles(x => true, false, null);
+        public async Task<List<Web_RootSourceFile>> RootSourceFileList() {
+            return await getRootSourceFiles(x => true,
+                includeOutput: false,
+                includeFileContent: false,
+                withTestNumber: null);
         }
 
         [HttpGet]
         [Route("api/v1/RootSourceFile/{pathHash}")]
-        public Web_RootSourceFile RootSourceFileList(string pathHash) {
-            return getRootSourceFiles(x => x.SourceFile.PathHash == pathHash, true, null).First();
+        public async Task<Web_RootSourceFile> RootSourceFileList(string pathHash) {
+            return (await getRootSourceFiles(x => x.SourceFile.PathHash == pathHash,
+                includeOutput: true,
+                includeFileContent: true,
+                withTestNumber: null))
+                .First();
         }
 
         [HttpGet]
         [Route("api/v1/RootSourceFile/{pathHash}/{testNumber}")]
         public async Task<Web_CTest> RootSourceFileList(string pathHash, int testNumber) {
-            var testFile = getRootSourceFiles(x => x.SourceFile.PathHash == pathHash, false, testNumber).First();
+            var testFile = (await getRootSourceFiles(x => x.SourceFile.PathHash == pathHash,
+                includeOutput: false,
+                includeFileContent: true,
+                withTestNumber: testNumber))
+                .First();
             var test = testFile.tests.First(x => x.testNumber == testNumber);
             testFile.tests = null;
             test.parent = testFile;
-            try {
-                test.lines = (await System.IO.File.ReadAllLinesAsync(testFile.path))
-                    .Select(x => string.IsNullOrEmpty(x)? " " : x)
-                    .ToArray();
-            }
-            catch(Exception ex) {
-                test.lines = new string[] { $"Failed to get text: {ex.Message}" };
-            }
+            
             return test;
         }
     }

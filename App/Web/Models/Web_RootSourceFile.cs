@@ -10,6 +10,7 @@ namespace CSick.Web.Models {
         public string path;
         public string pathHash;
         public string compileStatus;
+        public string[] lines;
 
         public Web_CompileResult compileResult;        
 
