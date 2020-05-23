@@ -27,7 +27,7 @@ namespace CSick.Actors._CTests {
             try {
                 var toAdd = newPathsToWatch.Where(newPath => !fileWatchers.ContainsKey(newPath)).ToList();
                 foreach (var pathToAdd in toAdd) {
-                    if (!File.Exists(pathToAdd)) {
+                    if (!Directory.Exists(pathToAdd)) {
                         continue;
                     }
                     var watcher = new FileSystemWatcher(pathToAdd);
