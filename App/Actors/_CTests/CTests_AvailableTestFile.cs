@@ -62,61 +62,67 @@ namespace CSick.Actors._CTests {
             });
 
             var compileStatusWas = this.CompileStatus;
-            switch (compileStatusWas) {
-                case CompileStatus.Modified:
-                    compileResult.Value = new CompileResult(notDone: true);
-                    try {
-                        if (startCompile(out var failedResult)) {
-                            compileStatus.Value = CompileStatus.Compiling;
-                        }
-                        else {
-                            compileResult.Value = failedResult;
-                            compileStatus.Value = CompileStatus.Failed;
-                        }
-                    }
-                    catch (Exception ex) {
-                        util.Log.Error(ex);
-                        this.compileResult.Value = new CompileResult(error: ex.Message, compileStarted, util.Now);
-                        compileStatus.Value = CompileStatus.Failed;
-                    }
-                    break;
-                case CompileStatus.Compiling:
-                    //TODO: What if a file is modified during compile?
-                    //Right now we have to wait. If the compile is stuck, that's bad.
-                    var doneCompiling = compileProcess.HasExited;
-                    await readFromStream(compileProcess.StandardOutput, sbStdOut);
-                    await readFromStream(compileProcess.StandardError, sbStdErr);
-                    if (doneCompiling) {
-                        var exitCode = compileProcess.ExitCode;
-                        if (exitCode != 0) {
-                            this.compileResult.Value = new CompileResult(
-                                error: $"Exit Code: {exitCode}:{Environment.NewLine}{StandardError}",
-                                compileProcess.StartTime,
-                                compileProcess.ExitTime);
-
-                            this.compileStatus.Value = CompileStatus.Failed;
-                        }
-                        else {
-                            this.compileResult.Value = new CompileResult(finished: true, success: true, compileProcess.StartTime, compileProcess.ExitTime, StandardOut);
-                            this.compileStatus.Value = CompileStatus.Compiled;
-                        }
-                    }
-                    break;
-                case CompileStatus.Failed:
-                case CompileStatus.Compiled:
-                    if (sourceVersion != mySourceFile.ParseTime) {
-                        compileStatus.Value = CompileStatus.Modified;
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException(compileStatusWas.ToString("g"));
-            }
+            this.compileStatus.Value = await step();
 
             if (compileStatusWas != CompileStatus) {
                 triggerUpdate();
             }
+            return result;
 
-            return await Task.FromResult(result);
+            async Task<CompileStatus> step() {
+                switch (compileStatusWas) {
+                    case CompileStatus.Modified:
+                        compileResult.Value = new CompileResult(notDone: true);
+                        try {
+                            if (startCompile(out var failedResult)) {
+                                return CompileStatus.Compiling;
+                            }
+                            else {
+                                compileResult.Value = failedResult;
+                                return CompileStatus.Failed;
+                            }
+                        }
+                        catch (Exception ex) {
+                            util.Log.Error(ex);
+                            this.compileResult.Value = new CompileResult(error: ex.Message, compileStarted, util.Now);
+                            return CompileStatus.Failed;
+                        }
+                    case CompileStatus.Compiling:
+                        //TODO: What if a file is modified during compile?
+                        //Right now we have to wait. If the compile is stuck, that's bad.
+                        var doneCompiling = compileProcess.HasExited;
+                        await readFromStream(compileProcess.StandardOutput, sbStdOut);
+                        await readFromStream(compileProcess.StandardError, sbStdErr);
+                        if (doneCompiling) {
+                            var exitCode = compileProcess.ExitCode;
+                            if (exitCode != 0) {
+                                this.compileResult.Value = new CompileResult(
+                                    error: $"Exit Code: {exitCode}:{Environment.NewLine}{StandardError}",
+                                    compileProcess.StartTime,
+                                    compileProcess.ExitTime);
+
+                                return CompileStatus.Failed;
+                            }
+                            else {
+                                this.compileResult.Value = new CompileResult(finished: true, success: true, compileProcess.StartTime, compileProcess.ExitTime, StandardOut);
+                                return CompileStatus.Compiled;
+                            }
+                        }
+                        else {
+                            return compileStatusWas;
+                        }
+                    case CompileStatus.Failed:
+                    case CompileStatus.Compiled:
+                        if (sourceVersion != mySourceFile.ParseTime) {
+                            return CompileStatus.Modified;
+                        }
+                        else {
+                            return compileStatusWas;
+                        }
+                    default:
+                        throw new NotImplementedException(compileStatusWas.ToString("g"));
+                }
+            }
 
             bool startCompile(out CompileResult failedResult) {
                 lock (lockStringBuilders) {
