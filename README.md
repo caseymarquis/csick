@@ -1,7 +1,7 @@
 # CSick
 
-CSick is a testing framework for c. It's sort of like webpack-dev-server, but
-for running tests on c files.
+CSick is a testing framework for C. It's sort of like webpack-dev-server, but
+for running tests on C files.
 
 ![Sample Testing Image](https://raw.githubusercontent.com/caseymarquis/csick/master/docs/sample.png)
 
