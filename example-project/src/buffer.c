@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "./buffer.h"
 
 #define BUFFER_SUCCESS 0
