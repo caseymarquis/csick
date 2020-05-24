@@ -10,7 +10,7 @@
 typedef enum {
     tr_Success = 0,
     tr_Failed = 65000,
-    tr_BadTestNumber = 65001,
+    tr_BadLineNumber = 65001,
     tr_AssertFailed = 65002,
 } TestResult;
 
@@ -23,27 +23,24 @@ extern int test_exitWithMessage(TestResult exitCode, char *msg, ...) {
   return 1;
 }
 
-extern int _test_getTestToRun(int argc, char ** argv){
+extern int _test_getLineToRun(int argc, char ** argv){
     if(argc < 2){
         test_exitWithMessage(
-            tr_BadTestNumber,
-            "No argument was passed to the test specifying which test to run.");
+            tr_BadLineNumber,
+            "You must pass in the line number that the test starts on.");
     }
-
-    int testToRun = atoi(argv[1]);
-    if(testToRun <= 0){
-        test_exitWithMessage(tr_BadTestNumber, "Test to run was less than or equal to 0: %d", testToRun);
+    int lineToRun = atoi(argv[1]);
+    if(lineToRun <= 0){
+        test_exitWithMessage(tr_BadLineNumber, "Test line to run was less than or equal to 0: %d", lineToRun);
     }
-    return testToRun;
+    return lineToRun;
 }
 
 #define START_TESTS int main(int argc, char ** argv) { \
-    int _testToRun = _test_getTestToRun(argc, argv); \
-    int _testCounter = 0;
+    int _lineToRun = _test_getLineToRun(argc, argv); \
     char * _selectedTestName = "No Test Selected";
 
-#define START_TEST(testName) \
-    if((++_testCounter) == _testToRun){ \
+#define START_TEST(testName) if(_lineToRun == __LINE__){ \
         _selectedTestName = testName;
 
 #define CS_ASSERT(expression) if(!(expression)){ int line = __LINE__; \
@@ -55,7 +52,7 @@ extern int _test_getTestToRun(int argc, char ** argv){
     }
 
 #define END_TESTS \
-    test_exitWithMessage(tr_BadTestNumber, "Test to run was not found: %d", _testToRun); \
+    test_exitWithMessage(tr_BadLineNumber, "No test was found on line %d.", _lineToRun); \
 }
 
 #endif //_test_h_

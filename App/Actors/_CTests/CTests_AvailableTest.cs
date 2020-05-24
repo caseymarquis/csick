@@ -163,7 +163,7 @@ namespace CSick.Actors._CTests {
                         RedirectStandardError = true,
                         RedirectStandardOutput = true,
                         WorkingDirectory = Path.GetDirectoryName(executablePath),
-                        Arguments = string.Join(' ', Test.TestNumber.ToString())
+                        Arguments = string.Join(' ', Test.LineNumber.ToString())
                     };
                     testProcess = Process.Start(psi);
                     failedResult = new TestResult(notDone: true);
