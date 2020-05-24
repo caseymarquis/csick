@@ -46,7 +46,7 @@ extern int _test_getTestToRun(int argc, char ** argv){
     if((++_testCounter) == _testToRun){ \
         _selectedTestName = testName;
 
-#define ASSERT(expression) if(!(expression)){ int line = __LINE__; \
+#define CS_ASSERT(expression) if(!(expression)){ int line = __LINE__; \
             test_exitWithMessage(line, "Assert Failed: '%s' Line %d", _selectedTestName, line); \
         }
 
