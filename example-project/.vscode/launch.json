@@ -9,14 +9,19 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/bin/${fileBasenameNoExtension}.exe",
-            "args": ["${lineNumber}"],
+            "args": ["${lineNumber}", "--debug"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": true,
+            "miDebuggerArgs": "-silent",
             "logging": {
                 "moduleLoad": false,
-                "programOutput": true
+                "engineLogging": false,
+                "trace": false,
+                "exceptions": false,
+                "programOutput": true,
+                "traceResponse": false
             },
             "MIMode": "gdb",
             "miDebuggerPath": "C:\\MinGW\\bin\\gdb.exe",
@@ -24,6 +29,11 @@
                 {
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Reduce gdb verbosity",
+                    "text": "set print thread-events off",
                     "ignoreFailures": true
                 }
             ]
