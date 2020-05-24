@@ -25,6 +25,10 @@ export default {
     },
     created() {
         this.fetchData();
+        Updates.register(this, ['tests']);
+    },
+    destroyed(){
+        Updates.remove(this);
     },
     watch: {
         $route: "fetchData"
@@ -41,6 +45,11 @@ export default {
                     this.testFile = testFile;
                 }
             );
+        },
+        processUpdate: function(group, cmd) {
+            if (cmd && cmd.includes(this.testFile.path)) {
+                this.fetchData();
+            }
         }
     },
     components: {

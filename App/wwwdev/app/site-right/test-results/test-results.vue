@@ -26,6 +26,10 @@ export default {
     },
     created() {
         this.fetchData();
+        Updates.register(this, ['tests']);
+    },
+    destroyed(){
+        Updates.remove(this);
     },
     watch: {
         $route: "fetchData"
@@ -42,6 +46,11 @@ export default {
             ).then(test => {
                 this.test = test;
             });
+        },
+        processUpdate: function(group, cmd) {
+            if (cmd === `${this.test.parent.path}/${this.test.testNumber}`) {
+                this.fetchData();
+            }
         }
     },
     components: {

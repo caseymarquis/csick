@@ -177,7 +177,7 @@ namespace CSick.Actors._CTests {
             }
 
             void triggerUpdate() {
-                sendUpdates.Send_UpdateTestsFile(mySourceFile.FileName ?? "");
+                sendUpdates.Send_UpdateTestsFile(mySourceFile.FilePath ?? "");
             }
         }
     }
