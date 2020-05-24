@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "gcc.exe - Build and debug active file",
+            "name": "CSick Test",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}\\a.cmd",
-            "args": [],
+            "program": "${fileDirname}/bin/${fileBasenameNoExtension}.exe",
+            "args": ["${lineNumber}"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -26,8 +26,7 @@
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
                 }
-            ],
-            "preLaunchTask": "gcc.exe build active file"
+            ]
         }
     ]
 }
