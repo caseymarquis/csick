@@ -138,7 +138,7 @@ namespace CSick.Actors._CTests {
                             return RunStatus.Paused;
                         }
                     default:
-                        throw new NotImplementedException(statusWas.ToString());
+                        throw new NotImplementedException(statusWas.ToString("g"));
                 }
             }
 
