@@ -1,4 +1,6 @@
 ﻿using CSick.Actors._CTests.Helpers;
+using CSick.Actors.ProcessRunnerNS;
+using CSick.Actors.ProcessRunnerNS.Helpers;
 using CSick.Actors.Signalr;
 using KC.Actin;
 using System;
@@ -9,6 +11,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CSick.Actors._CTests {
@@ -16,7 +19,7 @@ namespace CSick.Actors._CTests {
     public class CTests_AvailableTest : Actor {
         [FlexibleParent] CTests_AvailableTestFile parentFile;
         [Singleton] Signalr_SendUpdates sendUpdates;
-        [Singleton] AppSettings settings;
+        [Instance] ProcessRunner processRunner;
 
         protected override TimeSpan RunDelay => new TimeSpan(0, 0, 0, 0, 50);
 
@@ -24,50 +27,46 @@ namespace CSick.Actors._CTests {
 
         public CTest Test => parentFile.SourceFile.Tests.FirstOrDefault(x => x.TestNumber == this.Id);
 
-        private readonly Atom<RunStatus> runStatus = new Atom<RunStatus>(RunStatus.WaitingOnParent);
-        public RunStatus RunStatus => runStatus.Value;
+        private readonly Atom<RunStatus> runStatusAtom = new Atom<RunStatus>(RunStatus.WaitingOnParent);
+        public RunStatus RunStatus => runStatusAtom.Value;
 
-        private readonly Atom<TestResult> testResult = new Atom<TestResult>();
-        public TestResult TestResult => testResult.Value;
+        DateTimeOffset lastKnownExecutableVersion;
+        DateTimeOffset lastWaitStarted;
 
-        DateTimeOffset lastKnownParentCompileTime;
-        DateTimeOffset testStarted;
-        Process testProcess;
+        Atom<Guid> processReceiptAtom = new Atom<Guid>();
+        Atom<ProcHandle> procHandleAtom = new Atom<ProcHandle>(null);
+        public ProcHandle ProcHandle => procHandleAtom.Value;
 
-        private object lockStringBuilders = new object();
-        StringBuilder sbStdOut = new StringBuilder();
-        StringBuilder sbStdErr = new StringBuilder();
-
-        public string StandardOut {
-            get { lock (lockStringBuilders) return sbStdOut.ToString(); }
-        }
-        public string StandardError {
-            get { lock (lockStringBuilders) return sbStdErr.ToString(); }
-        }
+        Atom<ProcResult> lastCompletedRunResultAtom = new Atom<ProcResult>();
+        public ProcResult LastCompletedRunResult => lastCompletedRunResultAtom.Value;
 
         protected override async Task OnRun(ActorUtil util) {
             var cmds = Commands.DequeueAll();
 
-            var compileResult = parentFile.CompileResult;
-            var parentHasCompiled = compileResult.Finished && compileResult.Success;
-            var parentWasRecompiled = parentHasCompiled && compileResult.TimeStopped != lastKnownParentCompileTime;
-            lastKnownParentCompileTime = compileResult.TimeStopped;
+            var parentHasCompiled = parentFile.CompileStatus == CompileStatus.Compiled;
+            var parentExecutableVersion = parentFile.ExecutableVersion;
+            var parentWasRecompiled = parentHasCompiled && parentExecutableVersion != lastKnownExecutableVersion;
+            if (parentHasCompiled) {
+                lastKnownExecutableVersion = parentExecutableVersion;
+            }
 
             var shouldPause = cmds.Any(x => x == CTestCommand.Cancel);
             var shouldResumeOrForce = !shouldPause && cmds.Any(x => x == CTestCommand.Run);
 
-            var statusWas = this.runStatus.Value;
-            this.runStatus.Value = await step();
+            var statusWas = this.runStatusAtom.Value;
+            this.runStatusAtom.Value = step();
 
             if (statusWas != RunStatus) {
                 triggerUpdate();
             }
 
+            await Task.FromResult(0);
             return;
 
-            async Task<RunStatus> step() {
+            RunStatus step() {
                 switch (statusWas) {
                     case RunStatus.WaitingOnParent:
+                    case RunStatus.TimedOut:
                         if (shouldPause) {
                             return RunStatus.Paused;
                         }
@@ -75,7 +74,7 @@ namespace CSick.Actors._CTests {
                             return RunStatus.Scheduled;
                         }
                         else {
-                            return RunStatus.WaitingOnParent;
+                            return statusWas;
                         }
                     case RunStatus.Scheduled:
                         if (shouldPause) {
@@ -85,49 +84,63 @@ namespace CSick.Actors._CTests {
                             return RunStatus.WaitingOnParent;
                         }
                         else {
-                            try {
-                                if (startTest(out var failedResult)) {
-                                    return RunStatus.Running;
-                                }
-                                else {
-                                    this.testResult.Value = failedResult;
-                                    return RunStatus.WaitingOnParent;
-                                }
+                            this.ProcHandle?.Cancel();
+                            this.procHandleAtom.Value = null;
+                            var originalPath = parentFile.SourceFile.FilePath;
+                            var executablePath = Path.Combine(Path.GetDirectoryName(originalPath), "bin", Path.GetFileNameWithoutExtension(originalPath));
+                            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+                            if (isWindows) {
+                                executablePath += ".exe";
                             }
-                            catch (Exception ex) {
-                                util.Log.Error(ex);
-                                this.testResult.Value = new TestResult(error: ex.Message, testStarted, util.Now);
-                                return RunStatus.WaitingOnParent;
-                            }
+                            processReceiptAtom.Value = processRunner.StartProcess(new ProcStartInfo(
+                                path: executablePath,
+                                workingDirectory: Path.GetDirectoryName(executablePath),
+                                arguments: new string[] { Test.LineNumber.ToString() },
+                                maxRunTime: new TimeSpan(0, 0, 10),
+                                accept: newHandle => {
+                                    if (newHandle.Id == processReceiptAtom.Value) {
+                                        this.procHandleAtom.Value = newHandle;
+                                    }
+                                    else {
+                                        newHandle.Cancel();
+                                    }
+                                }
+                            ));
+                            startWait();
+                            return RunStatus.WaitingOnProcessStart;
+                        }
+                    case RunStatus.WaitingOnProcessStart:
+                        if (shouldPause) {
+                            this.processReceiptAtom.Value = Guid.Empty;
+                            return RunStatus.Paused;
+                        }
+                        else if (ProcHandle != null) {
+                            startWait();
+                            return RunStatus.Running;
+                        }
+                        else if (haveWaited(new TimeSpan(0, 0, 5))) {
+                            ProcHandle?.Cancel();
+                            return RunStatus.TimedOut;
+                        }
+                        else {
+                            return RunStatus.WaitingOnProcessStart;
                         }
                     case RunStatus.Running:
                         if (shouldPause) {
-                            testResult.Value = cancelTest();
+                            ProcHandle?.Cancel();
                             return RunStatus.Paused;
                         }
                         else {
-                            var doneTesting = testProcess.HasExited;
-                            await readFromStream(testProcess.StandardOutput, sbStdOut);
-                            await readFromStream(testProcess.StandardError, sbStdErr);
-                            if (!doneTesting) {
+                            var ph = this.ProcHandle;
+                            if (haveWaited(new TimeSpan(0, 0, 5))) {
+                                return RunStatus.TimedOut;
+                            }
+                            else if (ph.Status != ProcessStatus.Finished) {
                                 return RunStatus.Running;
                             }
                             else {
-                                var exitCode = testProcess.ExitCode;
-                                if (exitCode != 0) {
-                                    this.testResult.Value = new TestResult(
-                                        finished: true,
-                                        success: false,
-                                        exitCode: exitCode,
-                                        testProcess.StartTime,
-                                        testProcess.ExitTime,
-                                        StandardError);
-                                    return RunStatus.WaitingOnParent;
-                                }
-                                else {
-                                    this.testResult.Value = new TestResult(finished: true, success: true, testProcess.ExitCode, testProcess.StartTime, testProcess.ExitTime, StandardOut);
-                                    return RunStatus.WaitingOnParent;
-                                }
+                                lastCompletedRunResultAtom.Value = ph.Result;
+                                return RunStatus.WaitingOnParent;
                             }
                         }
                     case RunStatus.Paused:
@@ -142,68 +155,13 @@ namespace CSick.Actors._CTests {
                 }
             }
 
-            bool startTest(out TestResult failedResult) {
-                lock (lockStringBuilders) {
-                    sbStdOut.Clear();
-                    sbStdErr.Clear();
-                }
-                testStarted = util.Now;
-                try {
-                    //TODO: Out file is effectively hardcoded to ./bin/{fileName}{optionalOSExtension}
-                    //Changing this would be a giant pain.
-                    var originalPath = parentFile.SourceFile.FilePath;
-                    var executablePath = Path.Combine(Path.GetDirectoryName(originalPath), "bin", Path.GetFileNameWithoutExtension(originalPath));
-                    var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-                    if (isWindows) {
-                        executablePath += ".exe";
-                    }
-                    var psi = new ProcessStartInfo {
-                        FileName = executablePath,
-                        CreateNoWindow = true,
-                        RedirectStandardError = true,
-                        RedirectStandardOutput = true,
-                        WorkingDirectory = Path.GetDirectoryName(executablePath),
-                        Arguments = string.Join(' ', Test.LineNumber.ToString())
-                    };
-                    testProcess = Process.Start(psi);
-                    failedResult = new TestResult(notDone: true);
-                    return true;
-                }
-                catch (Exception ex) {
-                    failedResult = new TestResult(error: $"Failed to start test: {ex.Message}", testStarted, util.Now);
-                    return false;
-                }
+            void startWait() {
+                lastWaitStarted = util.Now;
             }
 
-            TestResult cancelTest() {
-                try {
-                    if (!testProcess.HasExited) {
-                        testProcess.Kill(true); //TODO: What if this hangs forever?
-                    }
-                }
-                catch (Exception ex) {
-                    util.Log.Error("Failed to cancel test.", ex);
-                }
-                return new TestResult("Test Canceled", testStarted, util.Now);
-            }
-
-            async Task readFromStream(StreamReader stream, StringBuilder to) {
-                if (testProcess == null) {
-                    return;
-                }
-                var buffer = new char[256];
-                while (stream.Peek() > 0) {
-                    var amountRead = await stream.ReadBlockAsync(buffer, 0, buffer.Length);
-                    if (amountRead == 0) {
-                        break; //Just in case
-                    }
-                    else {
-                        triggerUpdate();
-                    }
-                    lock (lockStringBuilders) {
-                        to.Append(buffer, 0, amountRead);
-                    }
-                }
+            bool haveWaited(TimeSpan moreThanThis) {
+                var timeSpentWaiting = util.Now - lastWaitStarted;
+                return timeSpentWaiting > moreThanThis;
             }
 
             void triggerUpdate() {

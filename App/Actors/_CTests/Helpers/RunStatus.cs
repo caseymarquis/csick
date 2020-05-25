@@ -7,7 +7,9 @@ namespace CSick.Actors._CTests.Helpers {
     public enum RunStatus {
         WaitingOnParent,
         Scheduled,
+        WaitingOnProcessStart,
         Running,
         Paused,
+        TimedOut,
     }
 }

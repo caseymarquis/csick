@@ -13,17 +13,17 @@ namespace CSick.Actors._CTests {
 
         public readonly MessageQueue<ImmutableList<CTestSourceFile>> LatestRootFiles = new MessageQueue<ImmutableList<CTestSourceFile>>();
 
-        private readonly Atom<ImmutableList<CTestSourceFile>> lastKnownActiveRoots = new Atom<ImmutableList<CTestSourceFile>>(ImmutableList.Create<CTestSourceFile>());
+        private readonly Atom<ImmutableList<CTestSourceFile>> lastKnownActiveRootsAtom = new Atom<ImmutableList<CTestSourceFile>>(ImmutableList.Create<CTestSourceFile>());
 
-        public ImmutableList<CTestSourceFile> RootSourceFiles => lastKnownActiveRoots.Value;
+        public ImmutableList<CTestSourceFile> RootSourceFiles => lastKnownActiveRootsAtom.Value;
 
         protected override async Task<IEnumerable<Role<string>>> CastActors(ActorUtil util, Dictionary<string, CTests_AvailableTestFile> myActors) {
             if (LatestRootFiles.TryDequeueAll(out var msg)) {
-                this.lastKnownActiveRoots.Value = msg.Last();
+                this.lastKnownActiveRootsAtom.Value = msg.Last();
             }
 
             //Create a child test file for each root source file:
-            var result = this.lastKnownActiveRoots.Value.Select(x => new Role<string> {
+            var result = this.lastKnownActiveRootsAtom.Value.Select(x => new Role<string> {
                 Id = x.FilePath,
             });
             return await Task.FromResult(result);

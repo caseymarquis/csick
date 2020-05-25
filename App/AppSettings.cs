@@ -71,13 +71,13 @@ namespace CSick {
         public string ConfigPath => Path.Combine(DataDirPath, "config.txt");
         public bool Exists => File.Exists(ConfigPath);
 
-        private Atom<UserSettings> userSettings = new Atom<UserSettings>();
-        public UserSettings UserSettings => userSettings.Value;
+        private Atom<UserSettings> userSettingsAtom = new Atom<UserSettings>();
+        public UserSettings UserSettings => userSettingsAtom.Value;
 
         public bool TryCreateOnDisk(out string error) {
             try {
-                if (this.userSettings.Value == null) {
-                    this.userSettings.Value = new UserSettings(this);
+                if (this.userSettingsAtom.Value == null) {
+                    this.userSettingsAtom.Value = new UserSettings(this);
                 }
                 Directory.CreateDirectory(DataDirPath);
                 File.WriteAllText(ConfigPath, JsonConvert.SerializeObject(this.UserSettings, Formatting.Indented));
@@ -107,7 +107,7 @@ namespace CSick {
                 }
 
                 try {
-                    this.userSettings.Value = JsonConvert.DeserializeObject<UserSettings>(allText);
+                    this.userSettingsAtom.Value = JsonConvert.DeserializeObject<UserSettings>(allText);
                 }
                 catch (Exception ex) {
                     error = $"Could not parse file {ConfigPath} {ex.Message}";

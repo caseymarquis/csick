@@ -5,14 +5,17 @@
                 <fa-icon v-if="selected" class="the-icon" icon="caret-square-down" />
                 <fa-icon v-else class="the-icon" icon="caret-square-right" />
                 <span class="file-name" v-text="testFile.fileName"></span>
-                <span class="off-container">
+                <div class="off-container">
                     <span class="off-text">
                         <span v-text="testFile.tests.length"></span> Tests
                     </span>
                     <div class="status-background" :class="getClassFromStatus">
                         <span v-text="status" class="status-text"></span>
                     </div>
-                </span>
+                </div>
+                <button @click="showInfo" class="btn btn-sm btn-primary info-btn">
+                    <fa-icon icon="info-circle" />
+                </button>
             </button>
         </router-link>
         <template v-if="selected">
@@ -29,6 +32,9 @@
 
 <script>
 import AppTest from "./app-test.vue";
+
+import alert from "../js/alert.js";
+import api from "../js/api.js";
 
 export default {
     props: ["testFile"],
@@ -54,14 +60,14 @@ export default {
                     if (tests.length === 0) {
                         return "No Tests";
                     }
-                    if (tests.some(test => !test.testResult.finished)) {
+                    if (tests.some(test => test.status === 'WaitingOnProcessStart' || test.status === 'Scheduled' || test.status === 'Running')) {
                         return "Running";
                     }
                     let anySuccess = tests.some(
-                        test => test.testResult.success
+                        test => test.runStatus !== 'TimedOut' && test.testResult.success
                     );
                     let anyFailure = tests.some(
-                        test => !test.testResult.success
+                        test => !test.testResult.success || test.runStatus === 'TimedOut'
                     );
                     if (anySuccess && anyFailure) {
                         return "Partial Pass";
@@ -89,6 +95,16 @@ export default {
             return { other: true };
         }
     },
+    methods: {
+        showInfo(ev){
+            api.get(`RootSourceFile/${this.testFile.pathHash}`)
+                .then(testFile => {
+                    alert.alert(`${this.testFile.fileName}`, JSON.stringify(testFile, null, '  '));
+                });
+            ev.stopPropagation();
+            ev.preventDefault();
+        }
+    },
     components: {
         AppTest
     }
@@ -113,6 +129,7 @@ export default {
     flex-flow: row nowrap;
     align-items: center;
     justify-content: space-between;
+    padding-right: 0;
 }
 
 .test-file > a > button > * {
@@ -173,5 +190,9 @@ export default {
 .status-text {
     font-size: 1em;
     font-weight: bold;
+}
+
+.info-btn {
+    justify-self: flex-end;
 }
 </style>

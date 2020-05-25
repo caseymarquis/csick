@@ -46,10 +46,10 @@ namespace CSick.Actors._CTests {
             {
                 var newRootPaths = rootCandidates.Where(candidatePath => !activeRootSourceFiles.Any(file => file.FilePath == candidatePath)).ToArray();
                 foreach (var rootPath in newRootPaths) {
-                    var errorMessages = new Atom<ImmutableList<string>>(ImmutableList.Create<string>());
-                    var result = await CTestSourceFile.Create(rootPath, currentParseTime, errorMessages);
+                    var errorMessagesAtom = new Atom<ImmutableList<string>>(ImmutableList.Create<string>());
+                    var result = await CTestSourceFile.Create(rootPath, currentParseTime, errorMessagesAtom);
                     activeRootSourceFiles = activeRootSourceFiles.Add(result);
-                    foreach (var message in errorMessages.Value) {
+                    foreach (var message in errorMessagesAtom.Value) {
                         util.Log.Error(message);
                     }
                 }
@@ -63,10 +63,10 @@ namespace CSick.Actors._CTests {
                         continue;
                     }
                     if (root.ReferencesPaths(changeCandidates)) {
-                        var errorMessages = new Atom<ImmutableList<string>>(ImmutableList.Create<string>());
-                        var result = await CTestSourceFile.Create(root.FilePath, currentParseTime, errorMessages);
+                        var errorMessagesAtom = new Atom<ImmutableList<string>>(ImmutableList.Create<string>());
+                        var result = await CTestSourceFile.Create(root.FilePath, currentParseTime, errorMessagesAtom);
                         activeRootSourceFiles = activeRootSourceFiles.Replace(root, result);
-                        foreach (var message in errorMessages.Value) {
+                        foreach (var message in errorMessagesAtom.Value) {
                             util.Log.Error(message);
                         }
                     }

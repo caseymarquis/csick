@@ -5,7 +5,8 @@
                 <span class="header-bright" v-text="testFile.fileName"></span>
             </h2>
         </div>
-        <pre v-text="result.output"></pre>
+        <output-container :output="result.output">
+        </output-container>
         <code-container class="the-code" :testFile="this.testFile" :tests="this.testFile.tests">
         </code-container>
     </div>
@@ -16,6 +17,7 @@ import Updates from "../../js/Updates.js";
 import api from "../../js/api.js";
 
 import CodeContainer from "../code-container/code-container.vue";
+import OutputContainer from "../output-container/output-container.vue";
 
 export default {
     data() {
@@ -53,7 +55,7 @@ export default {
         }
     },
     components: {
-        CodeContainer,
+        CodeContainer, OutputContainer
     }
 };
 </script>

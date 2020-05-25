@@ -47,6 +47,11 @@ extern int _test_hasDebugger(int argc, char ** argv){
     return 0;
 }
 
+extern int _test_getZero(){
+    //Helps avoid a warning:
+    return 0;
+}
+
 #define START_TESTS int main(int argc, char ** argv) { \
     int _lineToRun = _test_getLineToRun(argc, argv); \
     int _hasDebugger = _test_hasDebugger(argc, argv); \
@@ -56,7 +61,7 @@ extern int _test_hasDebugger(int argc, char ** argv){
         _selectedTestName = testName;
 
 #define CS_ASSERT(expression) if(!(expression)){ int line = __LINE__; \
-            if(_hasDebugger){ int __vscodeGdbDoesNotStopOnAssert = 1 / 0; } \
+            if(_hasDebugger){ int _stopTheTest1 = 1 / _test_getZero();  } \
             _test_exitWithMessage(line, "Assert Failed: '%s' Line %d", _selectedTestName, line); \
         }
 

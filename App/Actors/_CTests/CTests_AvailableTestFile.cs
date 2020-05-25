@@ -1,4 +1,6 @@
 ﻿using CSick.Actors._CTests.Helpers;
+using CSick.Actors.ProcessRunnerNS;
+using CSick.Actors.ProcessRunnerNS.Helpers;
 using CSick.Actors.Signalr;
 using KC.Actin;
 using System;
@@ -6,9 +8,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CSick.Actors._CTests {
@@ -17,32 +18,26 @@ namespace CSick.Actors._CTests {
         [FlexibleParent] CTests_AvailableTestFiles parent;
         [Singleton] AppSettings settings;
         [Singleton] Signalr_SendUpdates sendUpdates;
+        [Instance] ProcessRunner processRunner;
 
         protected override TimeSpan RunDelay => new TimeSpan(0, 0, 0, 0, 50);
 
-        Atom<CTestSourceFile> sourceFile = new Atom<CTestSourceFile>();
-        public CTestSourceFile SourceFile => sourceFile.Value;
+        Atom<CTestSourceFile> sourceFileAtom = new Atom<CTestSourceFile>();
+        public CTestSourceFile SourceFile => sourceFileAtom.Value;
 
-        readonly Atom<CompileStatus> compileStatus = new Atom<CompileStatus>(Helpers.CompileStatus.Modified);
-        public CompileStatus CompileStatus => compileStatus.Value;
+        Atom<ProcResult> lastCompileResultAtom = new Atom<ProcResult>();
+        public ProcResult LastCompileResult => lastCompileResultAtom.Value;
 
-        readonly Atom<CompileResult> compileResult = new Atom<CompileResult>(new CompileResult(notDone: true));
-        public CompileResult CompileResult => compileResult.Value;
+        readonly Atom<CompileStatus> compileStatusAtom = new Atom<CompileStatus>(Helpers.CompileStatus.Modified);
+        public CompileStatus CompileStatus => compileStatusAtom.Value;
 
-        DateTimeOffset sourceVersion = DateTimeOffset.MinValue;
-        DateTimeOffset compileStarted;
-        Process compileProcess;
+        Atom<DateTimeOffset> executableVersionAtom = new Atom<DateTimeOffset>();
+        public DateTimeOffset ExecutableVersion => executableVersionAtom.Value;
+        DateTimeOffset lastWaitStarted = DateTimeOffset.MinValue;
 
-        private object lockStringBuilders = new object();
-        StringBuilder sbStdOut = new StringBuilder();
-        StringBuilder sbStdErr = new StringBuilder();
-
-        public string StandardOut {
-            get { lock (lockStringBuilders) return sbStdOut.ToString(); }
-        }
-        public string StandardError {
-            get { lock (lockStringBuilders) return sbStdErr.ToString(); }
-        }
+        Atom<Guid> processReceiptAtom = new Atom<Guid>();
+        Atom<ProcHandle> procHandleAtom = new Atom<ProcHandle>(null);
+        public ProcHandle ProcHandle => procHandleAtom.Value;
 
         protected override async Task<IEnumerable<Role>> CastActors(ActorUtil util, Dictionary<int, CTests_AvailableTest> myActors) {
             var mySourceFile = parent.RootSourceFiles.FirstOrDefault(x => x.FilePath == this.Id);
@@ -52,68 +47,84 @@ namespace CSick.Actors._CTests {
                 return null;
             }
 
-            if (sourceFile.Value.ParseTime != mySourceFile.ParseTime) {
-                sourceFile.Value = mySourceFile;
+            if (sourceFileAtom.Value.ParseTime != mySourceFile.ParseTime) {
+                sourceFileAtom.Value = mySourceFile;
                 triggerUpdate();
             }
 
-            var result = mySourceFile.Tests.Select(x => new Role {
-                Id = x.TestNumber,
-            });
-
             var compileStatusWas = this.CompileStatus;
-            this.compileStatus.Value = await step();
+            this.compileStatusAtom.Value = step();
 
             if (compileStatusWas != CompileStatus) {
                 triggerUpdate();
             }
-            return result;
 
-            async Task<CompileStatus> step() {
+            await Task.FromResult(0);
+            return mySourceFile.Tests.Select(x => new Role {
+                Id = x.TestNumber,
+            });
+
+            CompileStatus step() {
                 switch (compileStatusWas) {
                     case CompileStatus.Modified:
-                        compileResult.Value = new CompileResult(notDone: true);
+                        executableVersionAtom.Value = mySourceFile.ParseTime;
+                        var us = settings.UserSettings;
                         try {
-                            if (startCompile(out var failedResult)) {
-                                return CompileStatus.Compiling;
-                            }
-                            else {
-                                compileResult.Value = failedResult;
-                                return CompileStatus.Failed;
-                            }
+                            Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(mySourceFile.FilePath), "bin"));
                         }
-                        catch (Exception ex) {
-                            util.Log.Error(ex);
-                            this.compileResult.Value = new CompileResult(error: ex.Message, compileStarted, util.Now);
-                            return CompileStatus.Failed;
+                        catch { }
+                        this.ProcHandle?.Cancel();
+                        this.procHandleAtom.Value = null;
+                        processReceiptAtom.Value = processRunner.StartProcess(new ProcStartInfo(
+                            path: us.CompilerPath,
+                            workingDirectory: Path.GetDirectoryName(mySourceFile.FilePath),
+                            arguments: us.GetProcessedCompileArguments(mySourceFile.FilePath),
+                            maxRunTime: new TimeSpan(0, 0, 10),
+                            accept: newHandle => {
+                                if (newHandle.Id == processReceiptAtom.Value) {
+                                    this.procHandleAtom.Value = newHandle;
+                                }
+                                else {
+                                    newHandle.Cancel();
+                                }
+                            }
+                        ));
+                        startWait();
+                        return CompileStatus.WaitingOnProcessStart;
+                    case CompileStatus.WaitingOnProcessStart:
+                        if (ProcHandle != null) {
+                            startWait();
+                            return CompileStatus.Compiling;
                         }
-                    case CompileStatus.Compiling:
-                        //TODO: What if a file is modified during compile?
-                        //Right now we have to wait. If the compile is stuck, that's bad.
-                        var doneCompiling = compileProcess.HasExited;
-                        await readFromStream(compileProcess.StandardOutput, sbStdOut);
-                        await readFromStream(compileProcess.StandardError, sbStdErr);
-                        if (doneCompiling) {
-                            var exitCode = compileProcess.ExitCode;
-                            if (exitCode != 0) {
-                                this.compileResult.Value = new CompileResult(
-                                    error: $"Exit Code: {exitCode}:{Environment.NewLine}{StandardError}",
-                                    compileProcess.StartTime,
-                                    compileProcess.ExitTime);
-
-                                return CompileStatus.Failed;
-                            }
-                            else {
-                                this.compileResult.Value = new CompileResult(finished: true, success: true, compileProcess.StartTime, compileProcess.ExitTime, StandardOut);
-                                return CompileStatus.Compiled;
-                            }
+                        else if (haveWaited(new TimeSpan(0, 0, 5))) {
+                            ProcHandle?.Cancel();
+                            return CompileStatus.TimedOut;
                         }
                         else {
-                            return compileStatusWas;
+                            return CompileStatus.WaitingOnProcessStart;
+                        }
+                    case CompileStatus.Compiling:
+                        var ph = this.ProcHandle;
+                        if (haveWaited(new TimeSpan(0, 0, 5))) {
+                            return CompileStatus.TimedOut;
+                        }
+                        else if (ph.Status != ProcessStatus.Finished) {
+                            return CompileStatus.Compiling;
+                        }
+                        else {
+                            var result = ph.Result;
+                            lastCompileResultAtom.Value = result;
+                            if (result.GracefulExit && result.ExitCode == 0) {
+                                return CompileStatus.Compiled;
+                            }
+                            else {
+                                return CompileStatus.Failed; 
+                            }
                         }
                     case CompileStatus.Failed:
+                    case CompileStatus.TimedOut:
                     case CompileStatus.Compiled:
-                        if (sourceVersion != mySourceFile.ParseTime) {
+                        if (executableVersionAtom.Value != mySourceFile.ParseTime) {
                             return CompileStatus.Modified;
                         }
                         else {
@@ -124,56 +135,13 @@ namespace CSick.Actors._CTests {
                 }
             }
 
-            bool startCompile(out CompileResult failedResult) {
-                lock (lockStringBuilders) {
-                    sbStdOut.Clear();
-                    sbStdErr.Clear();
-                }
-                sourceVersion = mySourceFile.ParseTime;
-                compileStarted = util.Now;
-                var us = settings.UserSettings;
-                try {
-                    var psi = new ProcessStartInfo {
-                        FileName = us.CompilerPath,
-                        CreateNoWindow = true,
-                        RedirectStandardError = true,
-                        RedirectStandardOutput = true,
-                        WorkingDirectory = Path.GetDirectoryName(mySourceFile.FilePath),
-                        Arguments = string.Join(' ', us.GetProcessedCompileArguments(mySourceFile.FilePath))
-                    };
-                    try {
-                        //TODO: Out file is effectively hardcoded to ./bin/{fileName}{optionalOSExtension}
-                        //Changing this would be a giant pain.
-                        Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(mySourceFile.FilePath), "bin"));
-                    }
-                    catch { }
-                    compileProcess = Process.Start(psi);
-                    failedResult = new CompileResult(notDone: true);
-                    return true;
-                }
-                catch (Exception ex) {
-                    failedResult = new CompileResult(error: $"Failed to start compiler: {ex.Message}", compileStarted, util.Now);
-                    return false;
-                }
+            void startWait() {
+                lastWaitStarted = util.Now;
             }
 
-            async Task readFromStream(StreamReader stream, StringBuilder to) {
-                if (compileProcess == null) {
-                    return;
-                }
-                var buffer = new char[256];
-                while (stream.Peek() > 0) {
-                    var amountRead = await stream.ReadBlockAsync(buffer, 0, buffer.Length);
-                    if (amountRead == 0) {
-                        break; //Just in case
-                    }
-                    else {
-                        triggerUpdate();
-                    }
-                    lock (lockStringBuilders) {
-                        to.Append(buffer, 0, amountRead);
-                    }
-                }
+            bool haveWaited(TimeSpan moreThanThis) {
+                var timeSpentWaiting = util.Now - lastWaitStarted;
+                return timeSpentWaiting > moreThanThis;
             }
 
             void triggerUpdate() {

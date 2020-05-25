@@ -17,19 +17,19 @@ namespace CSick.Web.Controllers {
 
         private Web_CTest getWebTestFromTest(CTests_AvailableTest availableTest, bool includeOutput) {
             var test = availableTest.Test;
-            var testResult = availableTest.TestResult;
+            var testResult = availableTest.LastCompletedRunResult;
             return new Web_CTest {
                 name = test.Name,
                 lineNumber = test.LineNumber,
                 testNumber = test.TestNumber,
                 runStatus = availableTest.RunStatus.ToString(),
-                testResult = new Web_TestResult {
+                testResult = new Web_ProcResult {
                     exitCode = testResult.ExitCode,
                     finished = testResult.Finished,
                     output = includeOutput? testResult.Output : null,
                     timeStarted = testResult.TimeStarted,
                     timeStopped = testResult.TimeStopped,
-                    success = testResult.Success,
+                    gracefulExit = testResult.GracefulExit,
                 },
             };
         }
@@ -38,18 +38,18 @@ namespace CSick.Web.Controllers {
             var rootFileActors = testFiles.Actors_Where(predicate);
             var ret = rootFileActors.Select(x => {
                 var sourceFile = x.SourceFile;
-                var compileResult = x.CompileResult;
+                var compileResult = x.LastCompileResult;
                 return new Web_RootSourceFile {
                     fileName = sourceFile.FileName,
                     path = sourceFile.FilePath,
                     pathHash = sourceFile.PathHash,
                     compileStatus = x.CompileStatus.ToString(),
-                    compileResult = new Web_CompileResult {
+                    compileResult = new Web_ProcResult {
                         finished = compileResult.Finished,
                         output = includeOutput? compileResult.Output : null,
                         timeStarted = compileResult.TimeStarted,
                         timeStopped = compileResult.TimeStopped,
-                        success = compileResult.Success,
+                        gracefulExit = compileResult.GracefulExit,
                     },
                     tests = x.Actors_GetAll()
                         .Select(y =>

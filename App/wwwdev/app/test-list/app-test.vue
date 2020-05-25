@@ -5,14 +5,22 @@
                 <fa-icon class="the-icon" icon="chevron-right" />
                 <span class="name" v-text="test.name"></span>
             </div>
-            <div class="status-background">
-                <span class="status-text" v-text="status"></span>
+            <div class="right-box">
+                <div class="status-background">
+                    <span class="status-text" v-text="status"></span>
+                </div>
+                <button @click="showInfo" class="btn btn-sm btn-primary">
+                    <fa-icon icon="info-circle" />
+                </button>
             </div>
         </button>
     </router-link>
 </template>
 
 <script>
+import alert from "../js/alert.js";
+import api from "../js/api.js";
+
 export default {
     props: ["test", "testFile"],
     computed: {
@@ -35,8 +43,8 @@ export default {
         },
         classFromStatus() {
             return {
-                passed: this.status === "Pass",
-                failed: this.status === "Fail",
+                'passed': this.status === "Pass",
+                'failed': this.status === "Fail",
                 "btn-info": this.selected,
                 "btn-dark": !this.selected
             };
@@ -49,8 +57,13 @@ export default {
         }
     },
     methods: {
-        onClick() {
-            this.$emit("select", this.test.testNumber);
+        showInfo(ev){
+            api.get(`RootSourceFile/${this.testFile.pathHash}/${this.test.testNumber}`)
+                .then(test => {
+                    alert.alert(`${this.testFile.fileName} => ${this.test.name}`, JSON.stringify(test, null, '  '));
+                });
+            ev.stopPropagation();
+            ev.preventDefault();
         }
     }
 };
@@ -72,6 +85,17 @@ export default {
     justify-content: space-between;
 }
 
+.right-box {
+    display: flex;
+    flex-flow: row nowrap;
+
+    align-items: center;
+}
+
+.right-box > * {
+    margin-left: .5em;
+}
+
 .status-background {
     background: #788086;
     border-radius: 0.5em;
@@ -82,19 +106,19 @@ export default {
     border-color: darkgray;
 }
 
-.passed > div {
+.passed > div > div {
     border-color: #9bff9b;
 }
 
-.failed > div {
+.failed > div > div {
     border-color: #ffbfca;
 }
 
-.passed > div > .status-text {
+.passed > div > div > .status-text {
     color: #9bff9b;
 }
 
-.failed > div > .status-text {
+.failed > div > div > .status-text {
     color: #ffbfca;
 }
 

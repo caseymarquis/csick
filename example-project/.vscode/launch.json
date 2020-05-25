@@ -35,6 +35,11 @@
                     "description": "Reduce gdb verbosity",
                     "text": "set print thread-events off",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "Gdb break on sigabrt",
+                    "text": "break abort",
+                    "ignoreFailures": true
                 }
             ]
         }

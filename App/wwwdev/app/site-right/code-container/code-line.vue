@@ -20,7 +20,7 @@ export default {
                     return { "highlight-bad": true };
                 } else if (this.number === test.lineNumber) {
                     if (test.testResult.finished) {
-                        if (test.testResult.success) {
+                        if (test.testResult.success && test.runStatus !== 'TimedOut') {
                             return { "highlight-good": true };
                         } else {
                             return { "highlight-bad": true };

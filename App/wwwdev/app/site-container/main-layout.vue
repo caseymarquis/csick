@@ -4,9 +4,10 @@
             v-if="$store.state.modal.show"
             :title="$store.state.modal.title"
             :show-cancel="$store.state.modal.showCancel"
+            width="60vw"
             v-on:close="closeMainModal"
         >
-            <p v-text="$store.state.modal.text"></p>
+            <pre id="the-modal-pre" v-text="$store.state.modal.text"></pre>
         </app-modal>
 
         <slide-menu :style="slideDivStyle"></slide-menu>
@@ -102,12 +103,16 @@ export default {
             if (newVal !== this.$store.state.screenHeight) {
                 this.$store.commit("setScreenHeight", newVal);
             }
+        },
+        closeMainModal(){
+            this.$store.commit('setModal', { show: false });
         }
     },
     components: {
         SearchBar,
         SlideMenu,
-        TestList
+        TestList,
+        AppModal,
     }
 };
 </script>
@@ -206,6 +211,13 @@ export default {
 #the-router {
     height: 100%;
     flex-grow: 1;
+}
+
+#the-modal-pre {
+    max-width: 60vw;
+    max-height: 60vh;
+    overflow: scroll;
+    background: #111;
 }
 
 @media (max-width: 720px) {

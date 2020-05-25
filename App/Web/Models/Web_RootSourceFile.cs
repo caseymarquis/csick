@@ -10,18 +10,11 @@ namespace CSick.Web.Models {
         public string path;
         public string pathHash;
         public string compileStatus;
-        public string[] lines;
 
-        public Web_CompileResult compileResult;        
+        public Web_ProcResult compileResult;
 
         public List<Web_CTest> tests;
-    }
 
-    public class Web_CompileResult {
-        public bool finished;
-        public bool success;
-        public DateTimeOffset timeStarted;
-        public DateTimeOffset timeStopped;
-        public string output;
+        public string[] lines;
     }
 }

@@ -28,10 +28,10 @@ namespace CSick.Actors._CTests.Helpers {
             Tests = tests;
         }
 
-        public static async Task<CTestSourceFile> Create(string path, DateTimeOffset parseTime, Atom<ImmutableList<string>> errorMessages) {
+        public static async Task<CTestSourceFile> Create(string path, DateTimeOffset parseTime, Atom<ImmutableList<string>> errorMessagesAtom) {
             var lineage = new string[] { path }.ToImmutableList();
             path = Path.GetFullPath(path);
-            return await createInternal(path, lineage, parseTime, errorMessages);
+            return await createInternal(path, lineage, parseTime, errorMessagesAtom);
         }
 
         private static string getFileNotFoundMessage(ImmutableList<string> lineage) {
@@ -46,13 +46,13 @@ namespace CSick.Actors._CTests.Helpers {
             return sb.ToString();
         }
 
-        static async Task<CTestSourceFile> createInternal(string path, ImmutableList<string> lineage, DateTimeOffset parseTime, Atom<ImmutableList<string>> errorMessages) {
+        static async Task<CTestSourceFile> createInternal(string path, ImmutableList<string> lineage, DateTimeOffset parseTime, Atom<ImmutableList<string>> errorMessagesAtom) {
             //Lineage should already include the current path when this function is called.
             string[] absolutePathedDependencies = Array.Empty<string>();
             var tests = ImmutableList.Create<CTest>();
             try {
                 if (!File.Exists(path)) {
-                    errorMessages.Value = errorMessages.Value.Add(getFileNotFoundMessage(lineage));
+                    errorMessagesAtom.Value = errorMessagesAtom.Value.Add(getFileNotFoundMessage(lineage));
                 }
                 else {
                     var directory = Path.GetDirectoryName(path);
@@ -66,7 +66,7 @@ namespace CSick.Actors._CTests.Helpers {
                 }
             }
             catch(Exception ex) {
-                errorMessages.Value = errorMessages.Value.Add($"Failed to read file: '{path}' with error {ex.Message}"); 
+                errorMessagesAtom.Value = errorMessagesAtom.Value.Add($"Failed to read file: '{path}' with error {ex.Message}"); 
             }
 
             var children = ImmutableList.Create<CTestSourceFile>();
@@ -74,7 +74,7 @@ namespace CSick.Actors._CTests.Helpers {
                 if (lineage.Contains(absolutePath)) {
                     continue;
                 }
-                children = children.Add(await createInternal(absolutePath, lineage.Add(absolutePath), parseTime, errorMessages));
+                children = children.Add(await createInternal(absolutePath, lineage.Add(absolutePath), parseTime, errorMessagesAtom));
             }
 
             return new CTestSourceFile(path, lineage, parseTime, children, tests);
