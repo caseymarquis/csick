@@ -33,6 +33,9 @@ namespace CSick {
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             orEqualsList(ref CompileArguments, new List<string> {
                 "-g",
+                "-Werror",
+                "-Wall",
+                "-Wextra",
                 "{fileName}{fileExt}",
                 "-o",
                 isWindows? "./bin/{fileName}.exe" : "./bin/{fileName}",

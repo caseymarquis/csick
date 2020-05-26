@@ -6,7 +6,7 @@
         {
             "type": "shell",
             "label": "CSick Compile",
-            "command": "gcc -g ${file} -o ${fileDirname}/bin/${fileBasenameNoExtension}.exe"
+            "command": "gcc -g -Werror -Wall -Wextra ${file} -o ${fileDirname}/bin/${fileBasenameNoExtension}.exe"
         }
     ]
 }

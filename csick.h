@@ -52,16 +52,26 @@ extern int _test_getZero(){
     return 0;
 }
 
+extern int _test_useIntVariable(int i){
+    return i;
+}
+
+extern char * _test_useCharPointer(char * c){
+    return c;
+}
+
 #define START_TESTS int main(int argc, char ** argv) { \
     int _lineToRun = _test_getLineToRun(argc, argv); \
     int _hasDebugger = _test_hasDebugger(argc, argv); \
-    char * _selectedTestName = "No Test Selected";
+    _test_useIntVariable(_hasDebugger); \
+    char * _selectedTestName = "No Test Selected"; \
+    _test_useCharPointer(_selectedTestName);
 
 #define START_TEST(testName) if(_lineToRun == __LINE__){ \
         _selectedTestName = testName;
 
 #define CS_ASSERT(expression) if(!(expression)){ int line = __LINE__; \
-            if(_hasDebugger){ int _stopTheTest1 = 1 / _test_getZero();  } \
+            if(_hasDebugger){ _test_useIntVariable(1 / _test_getZero());  } \
             _test_exitWithMessage(line, "Assert Failed: '%s' Line %d", _selectedTestName, line); \
         }
 
