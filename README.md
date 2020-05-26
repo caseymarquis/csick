@@ -7,7 +7,7 @@ for running tests on C files.
 
 ## What does it do?
 1. Watches all .c files in a specified directory.
-2. Parses those files to find tests, and reads their project includes to trace their dependencies.
+2. Parses those files to find tests, and reads their includes to trace their dependencies.
 3. When a root test file or a dependency file is modified, CSick recompiles all related tests and runs them again.
 4. The results of this are displayed on a local webpage.
 
