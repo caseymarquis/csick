@@ -37,6 +37,8 @@ namespace CSick.Actors._CTests {
         Atom<ProcHandle> procHandleAtom = new Atom<ProcHandle>(null);
         public ProcHandle ProcHandle => procHandleAtom.Value;
 
+        //Syncronized public read private write variables seem useful.
+        //This would be an interesting language construct to have.
         Atom<ProcResult> lastCompletedRunResultAtom = new Atom<ProcResult>();
         public ProcResult LastCompletedRunResult => lastCompletedRunResultAtom.Value;
 
@@ -63,6 +65,11 @@ namespace CSick.Actors._CTests {
             await Task.FromResult(0);
             return;
 
+            //This state-machine actor combination which cancels if a particular
+            //step stalls for long enough is a nice pattern. I wonder if there's
+            //a nice way to abstract this. If putting this in a language, it would
+            //be really neat to define the enum inline based on the needs of the actor,
+            //and then reference the enum elsewhere.
             RunStatus step() {
                 switch (statusWas) {
                     case RunStatus.WaitingOnParent:
@@ -92,6 +99,11 @@ namespace CSick.Actors._CTests {
                             if (isWindows) {
                                 executablePath += ".exe";
                             }
+                            //It would be nice if Actin provided a mechanism to automatically
+                            //handle this sort of interaction. We want another actor to do something,
+                            //and our next action requires the completion of it. The called actor needs
+                            //to know if we've canceled the request, and we need to cancel the request
+                            //if we go too long waiting for it.
                             processReceiptAtom.Value = processRunner.StartProcess(new ProcStartInfo(
                                 path: executablePath,
                                 workingDirectory: Path.GetDirectoryName(executablePath),

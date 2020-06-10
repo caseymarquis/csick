@@ -9,6 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace CSick.Actors.ProcessRunnerNS {
+    /// <summary>
+    /// The implementation of this class is hacky. I'm pretty sure it can be removed
+    /// by turning the ProcessRunner into a scene which owns disposable subprocesses.
+    /// </summary>
     public class ProcHandle {
         private object lockMe = new object();
         private ProcHandle_Internal data;
@@ -39,6 +43,10 @@ namespace CSick.Actors.ProcessRunnerNS {
             }
         }
 
+        /// <summary>
+        /// Couldn't find a conclusive answer on whether Diagnostics.Process is thread safe.
+        /// As such, we're cautiously locking when we access the underlying process.
+        /// </summary>
         public bool TryWithProcess(TimeSpan timeout, Action<Process> withProc) {
             if (lockProc.Wait(timeout)) {
                 try {
