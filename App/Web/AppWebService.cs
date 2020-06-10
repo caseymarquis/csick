@@ -87,14 +87,19 @@ namespace CSick.Web
             }
 
             app.UseRouting();
-            app.UseDefaultFiles();
-
-            app.UseStaticFiles();
+            var defaultFilePath = Path.Combine(Directory.GetCurrentDirectory(), "App", "wwwroot");
+            app.UseDefaultFiles(new DefaultFilesOptions {
+                 FileProvider = new PhysicalFileProvider(defaultFilePath),
+            });
+            app.UseStaticFiles(new StaticFileOptions {
+                 FileProvider = new PhysicalFileProvider(defaultFilePath),
+            });
+            Directory.CreateDirectory(defaultFilePath);
 
             var provider = new FileExtensionContentTypeProvider();
             provider.Mappings[".exe"] = "application/octet-stream";
 
-            var staticFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwdev", "app", "_dev-server", "static");
+            var staticFilePath = Path.Combine(Directory.GetCurrentDirectory(), "App", "wwwdev", "app", "_dev-server", "static");
             Directory.CreateDirectory(staticFilePath);
             var staticFileProvider = new PhysicalFileProvider(staticFilePath);
             app.UseStaticFiles(new StaticFileOptions() {
