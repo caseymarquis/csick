@@ -17,6 +17,9 @@ namespace CSick {
         public static Director Director = new Director();
 
         public async Task Run() {
+            var solutionDir = Util.GetSolutionDirectory();
+            Directory.SetCurrentDirectory(solutionDir);
+
             var config = new AppSettings();
             await Util.WaitForThreadAsync(new TimeSpan(0, 0, 5), null, () => {
                 if (!config.Exists) {

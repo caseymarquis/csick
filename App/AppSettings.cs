@@ -25,7 +25,7 @@ namespace CSick {
 
             var solutionDir = Util.GetSolutionDirectory();
             orEqualsList(ref TestDirectories, new List<string> {
-                string.IsNullOrWhiteSpace(solutionDir)? "" : Path.GetFullPath(Path.Combine(solutionDir, "..")),
+                string.IsNullOrWhiteSpace(solutionDir)? "" : "../",
             });
             orEqualsList(ref TestRootPatterns, new List<string> {
                 "*.c",
@@ -70,7 +70,7 @@ namespace CSick {
     }
 
     public class AppSettings {
-        public readonly string DataDirPath = Path.GetFullPath(Path.Combine(Util.GetSolutionDirectory(), "..", "csick-data"));
+        public readonly string DataDirPath = "../csick-data";
         public string ConfigPath => Path.Combine(DataDirPath, "config.txt");
         public bool Exists => File.Exists(ConfigPath);
 
