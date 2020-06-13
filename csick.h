@@ -67,17 +67,17 @@ extern char * _test_useCharPointer(char * c){
     char * _selectedTestName = "No Test Selected"; \
     _test_useCharPointer(_selectedTestName);
 
-#define START_TEST(testName) if(_lineToRun == __LINE__){ \
+#define START_TEST(testName) do { if(_lineToRun == __LINE__){ \
         _selectedTestName = testName;
 
-#define CS_ASSERT(expression) if(!(expression)){ int line = __LINE__; \
+#define CS_ASSERT(expression) do { if(!(expression)){ int line = __LINE__; \
             if(_hasDebugger){ _test_useIntVariable(1 / _test_getZero());  } \
             _test_exitWithMessage(line, "Assert Failed: '%s' Line %d", _selectedTestName, line); \
-        }
+        } } while(0);
 
 #define END_TEST \
         return tr_Success; \
-    }
+    } } while(0);
 
 #define END_TESTS \
     _test_exitWithMessage(tr_BadLineNumber, "No test was found on line %d.", _lineToRun); \
