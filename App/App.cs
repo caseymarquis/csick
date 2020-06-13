@@ -49,12 +49,21 @@ namespace CSick {
                     Console.WriteLine($"CSick started in {sw.ElapsedMilliseconds}ms.");
                     await Task.FromResult(0);
                 });
+
+                //directorConfig.Set_RuntimeLog<DebugLogger>();
                 await Task.FromResult(0);
             });
         }
 
         public void Dispose() {
             Director.Dispose();
+        }
+    }
+
+    [Singleton]
+    public class DebugLogger : IActinLogger {
+        public void Log(ActinLog log) {
+            Console.WriteLine(log.ToString());
         }
     }
 }
