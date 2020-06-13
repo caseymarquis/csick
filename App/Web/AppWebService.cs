@@ -18,6 +18,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace CSick.Web
 {
@@ -73,6 +74,8 @@ namespace CSick.Web
                     //Add a customized cors policy as needed:
                 });
             });
+
+            services.AddLogging(c => c.ClearProviders());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
