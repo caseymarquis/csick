@@ -9,8 +9,8 @@
 START_TESTS
 
 START_TEST("Should Time Out")
-Sleep(100000);
-CS_ASSERT(1 == 1);
+    Sleep(100000);
+    CS_ASSERT(1 == 1);
 END_TEST
 
 END_TESTS
