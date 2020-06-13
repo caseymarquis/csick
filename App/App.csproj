@@ -23,14 +23,20 @@
     <Compile Remove="site-dev-server\**" />
     <Compile Remove="site-dev-server\**" />
     <Compile Remove="site-dev\**" />
+    <Compile Remove="wwwdev\**" />
     <Compile Remove="wwwroot\**" />
+    <Content Remove="wwwdev\**" />
+    <Content Remove="wwwroot\**" />
     <EmbeddedResource Remove="App\site-dev-server\**" />
     <EmbeddedResource Remove="App\site-dev\**" />
     <EmbeddedResource Remove="App\wwwroot\**" />
     <EmbeddedResource Remove="example-project\**" />
     <EmbeddedResource Remove="Web\**" />
+    <EmbeddedResource Remove="wwwdev\**" />
+    <EmbeddedResource Remove="wwwroot\**" />
     <None Remove="site-dev-server\**" />
     <None Remove="site-dev\**" />
+    <None Remove="wwwdev\**" />
     <None Remove="wwwroot\**" />
     <None Remove="example-project\**" />
   </ItemGroup>
