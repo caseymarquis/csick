@@ -127,8 +127,19 @@ namespace CSick.Actors.ProcessRunnerNS {
                     //we will block and be unable to run doKill();
                     var t = new Thread(() => {
                         try {
-                            while (ProcessStatus.Running == workingProcess.ReadWithLock(x => x.Status)) {
+
+                            var sw = new Stopwatch();
+                            sw.Start();
+
+                            ProcessStatus getStatus() { return workingProcess.ReadWithLock(x => x.Status); };
+
+                            while (getStatus() <= ProcessStatus.Running) {
                                 try {
+                                    if (getStatus() == ProcessStatus.NotStarted && sw.ElapsedMilliseconds > 5000) {
+                                        doKill(started);
+                                    }
+
+                                    Thread.Sleep(10);
                                     workingProcess.WithProcess(new TimeSpan(0, 0, 5), proc => {
                                         if (proc.HasExited) {
                                             readOutput();
