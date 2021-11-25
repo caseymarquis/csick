@@ -71,7 +71,7 @@ namespace CSick {
 
     public class AppSettings {
         public readonly string DataDirPath = "../csick-data";
-        public string ConfigPath => Path.Combine(DataDirPath, "config.txt");
+        public string ConfigPath => Path.Combine(DataDirPath, "config.json");
         public bool Exists => File.Exists(ConfigPath);
 
         private Atom<UserSettings> userSettingsAtom = new Atom<UserSettings>();
