@@ -20,15 +20,10 @@ The net result is that as you modify and change your files, test binaries are au
 1. Create a directory called 'test' in your existing project.
 2. Open a terminal in this folder.
 3. `git clone --depth 1 https://github.com/caseymarquis/csick.git`
-4. `cd ./csick/App/wwwdev`
-4. `npm install`
-5. `node ./node_modules/webpack/bin/webpack.js --progress --content-base ../wwwroot`
-6. `cd ../../../`
-
-### Run
-7. `dotnet run --project ./csick/App/App.csproj`
-8. Navigate to `localhost:5000`
-9. Add test files in the test folder.
+4. `cd ./csick`
+4. `./install.bat`
+4. `cd ../`
+4. `./run-tests.bat`
 10. For example tests, see 'csick/example-project/test'
 11. When csick is running, you can debug specific tests from within VS Code by selecting a test and hitting F5.
 This requires a bit of configuration however. You can copy the config files from 'csick/example-project/.vscode'

@@ -11,6 +11,7 @@ using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using KC.Actin;
+using System.Diagnostics;
 
 namespace CSick {
     public static class Util {
@@ -25,8 +26,7 @@ namespace CSick {
             return dirPath;
         }
 
-        public static string[] GetEnumOptionsAsString<T>() where T : struct
-        {
+        public static string[] GetEnumOptionsAsString<T>() where T : struct {
             var enumArray = (T[])Enum.GetValues(typeof(T));
             return enumArray
                 .Select(x => Enum.GetName(typeof(T), x))
@@ -46,8 +46,7 @@ namespace CSick {
             }
         }
 
-        public static T? GetEnumFromString<T>(string value) where T : struct
-        {
+        public static T? GetEnumFromString<T>(string value) where T : struct {
             T ret;
             if (Enum.TryParse(value, out ret)) {
                 return ret;
@@ -63,7 +62,7 @@ namespace CSick {
         }
 
         [SuppressMessage("", "CS4014")] //We want to run async tasks in here without waiting.
-        public static async Task<T> WaitAsync<T>(this Task<T> userTask, TimeSpan timeout, CancellationToken? cToken = null,  TimeSpan? waitInterval = null) {
+        public static async Task<T> WaitAsync<T>(this Task<T> userTask, TimeSpan timeout, CancellationToken? cToken = null, TimeSpan? waitInterval = null) {
             if (!waitInterval.HasValue) {
                 waitInterval = new TimeSpan(0, 0, 0, 0, 10); //Mils
             }
@@ -150,7 +149,7 @@ namespace CSick {
             Exception exOuter = null;
             var timeoutQuit = DateTimeOffset.Now.Add(timeout);
             T result = default(T);
-            var t = new Thread(()=> {
+            var t = new Thread(() => {
                 try {
                     result = doThis();
                 }
@@ -178,7 +177,7 @@ namespace CSick {
                         return result;
                     }
                 }
-                if (t.ThreadState == ThreadState.Aborted) {
+                if (t.ThreadState == System.Threading.ThreadState.Aborted) {
                     throw new TaskCanceledException("Thread was aborted.");
                 }
                 if (cToken?.IsCancellationRequested ?? false) {
@@ -195,6 +194,97 @@ namespace CSick {
             var cryptoBytes = new byte[16];
             r.GetNonZeroBytes(cryptoBytes);
             return new Guid(cryptoBytes);
+        }
+
+        public struct ProcResult {
+            public string Cmd;
+            public string Args;
+            public string Dir;
+            public string StdOut;
+            public string StdError;
+            public bool Success;
+
+            public override string ToString() {
+                return $"{Cmd ?? "null"} {Args ?? "null"}\r\nin {Dir ?? "null"}\r\n{(Success ? "Success" : "Failure")}\r\nStdOut: {StdOut}\r\nStdErr: {StdError}";
+            }
+        }
+
+        public static async Task<ProcResult> RunProcess(string fileName, string args, string workingDir) {
+            var processAtom = new Atom<Process>();
+            try {
+                return await Util.WaitForThreadAsync(new TimeSpan(0, 10, 00), null, () => {
+                    try {
+                        workingDir = Path.GetFullPath(workingDir);
+                        var proc = new Process() {
+                            StartInfo = new ProcessStartInfo() {
+                                FileName = fileName,
+                                WorkingDirectory = workingDir,
+                                Arguments = args,
+                                UseShellExecute = false,
+                                RedirectStandardOutput = true,
+                                RedirectStandardError = true,
+                                CreateNoWindow = true,
+                            }
+                        };
+                        proc.Start();
+                        processAtom.Value = proc;
+                        var sb = new StringBuilder();
+                        var buffer = new char[128];
+                        while (!proc.StandardOutput.EndOfStream) {
+                            var bytesRead = proc.StandardOutput.Read(buffer, 0, buffer.Length);
+                            Console.Write(buffer, 0, bytesRead);
+                        }
+                        var stdOut = sb.ToString();
+                        if (proc.ExitCode == 0) {
+                            return new ProcResult() {
+                                Cmd = fileName,
+                                Args = args,
+                                Dir = workingDir,
+                                StdOut = stdOut,
+                                StdError = "",
+                                Success = true,
+                            };
+                        }
+
+                        sb.Clear();
+                        try {
+                            while (!proc.StandardError.EndOfStream) {
+                                sb.AppendLine(proc.StandardError.ReadLine());
+                            }
+                        }
+                        catch { }
+
+                        processAtom.Value = null;
+                        return new ProcResult() {
+                            Cmd = fileName,
+                            Args = args,
+                            Dir = workingDir,
+                            StdError = sb.ToString(),
+                            StdOut = stdOut,
+                            Success = false,
+                        };
+                    }
+                    catch (Exception ex) {
+                        return new ProcResult() {
+                            Cmd = fileName,
+                            Args = args,
+                            Dir = workingDir,
+                            StdOut = "",
+                            StdError = $"Excellerant Exception: {ex}",
+                            Success = false,
+                        };
+                    }
+                });
+            }
+            finally {
+                var proc = processAtom.Value;
+                if (proc != null) {
+                    try {
+                        proc.Kill(true);
+                    }
+                    catch { }
+                }
+            }
         }
 
     }

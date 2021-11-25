@@ -8,6 +8,7 @@ using System.Diagnostics;
 using KC.Actin.ActorUtilNS;
 using System.Runtime.InteropServices.ComTypes;
 using CSick.Actors;
+using CSick.Utility;
 
 namespace CSick {
     public class App {
@@ -16,7 +17,7 @@ namespace CSick {
         //our web controllers.
         public static Director Director = new Director();
 
-        public async Task Run() {
+        public async Task Run(string[] args) {
             var solutionDir = Util.GetSolutionDirectory();
             Directory.SetCurrentDirectory(solutionDir);
 
@@ -35,6 +36,10 @@ namespace CSick {
                 }
             });
             config.UserSettings.FillInEmptySettings(config);
+            if (args.Any(x => x == "--install")) {
+                await new Install().Run();
+                return;
+            }
 
             Director.AddSingletonDependency(config);
             await Director.Run(configure: async directorConfig => {
