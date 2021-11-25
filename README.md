@@ -29,6 +29,10 @@ The net result is that as you modify and change your files, test binaries are au
 7. `dotnet run --project ./csick/App/App.csproj`
 8. Navigate to `localhost:5000`
 9. Add test files in the test folder.
+10. For example tests, see 'csick/example-project/test'
+11. When csick is running, you can debug specific tests from within VS Code by selecting a test and hitting F5.
+This requires a bit of configuration however. You can copy the config files from 'csick/example-project/.vscode'
+to get started. It is assumed that gcc and gdb will be available in your environment.
 
 ```c
 #include "./csick/csick.h"
