@@ -84,6 +84,12 @@ namespace CSick {
                 }
                 Directory.CreateDirectory(DataDirPath);
                 File.WriteAllText(ConfigPath, JsonConvert.SerializeObject(this.UserSettings, Formatting.Indented));
+                try {
+                    File.WriteAllText(Path.Combine(DataDirPath, ".gitignore"), "logs");
+                }
+                catch {
+                    //If it existed from some reason, then just swallow this error. This is just for convenience.
+                }
                 error = null;
                 return true;
             }
