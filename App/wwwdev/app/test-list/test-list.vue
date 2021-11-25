@@ -3,8 +3,20 @@
         <div class="header-container">
             <h2 class="header">Available Test Files</h2>
         </div>
-        <div class="test-list-container">
+        <div v-if="testFiles.length > 0" class="test-list-container">
             <test-file v-for="testFile in testFiles" :testFile="testFile" :key="testFile.path"></test-file>
+        </div>
+        <div v-else class="test-list-container">
+            <p class="error-message" v-for="path in testDirectories" :key="path.noKey">
+                No test files found in
+                '<span v-text="path">
+                </span>'.
+                You'll need to either add tests in this location, or change the
+                default test location. Relative to the csick directory, look for
+                '../csick-data/config.json'. You can change the test directories
+                from here. Refer to 'csick/example-project/.vscode' for debugging
+                tests from vscode. Example tests can be found in 'csick/example-project/test'.
+            </p>
         </div>
     </div>
 </template>
@@ -17,7 +29,8 @@ import Updates from "../js/Updates.js";
 export default {
     data() {
         return {
-            testFiles: []
+            testFiles: [],
+            testDirectories: [],
         };
     },
     created() {
@@ -31,6 +44,11 @@ export default {
         fetchData() {
             api.get(`RootSourceFile`).then(testFiles => {
                 this.testFiles = testFiles;
+                if(testFiles.length === 0){
+                    api.get(`Diag/Directories`).then(testDirectories => {
+                        this.testDirectories = testDirectories;
+                    });
+                }
             });
         },
         processUpdate: function(group, cmd) {
@@ -79,5 +97,11 @@ export default {
 
 .header-bright {
     color: white;
+}
+
+.error-message {
+    padding: .25em;
+    border-bottom: solid;
+    max-width: 40em;
 }
 </style>
