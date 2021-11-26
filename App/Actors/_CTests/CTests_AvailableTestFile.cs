@@ -79,7 +79,7 @@ namespace CSick.Actors._CTests {
                             path: us.CompilerPath,
                             workingDirectory: Path.GetDirectoryName(mySourceFile.FilePath),
                             arguments: us.GetProcessedCompileArguments(mySourceFile.FilePath),
-                            maxRunTime: new TimeSpan(0, 0, 10),
+                            maxRunTime: new TimeSpan(0, 0, settings.UserSettings.MaxCompileSeconds),
                             accept: newHandle => {
                                 if (newHandle.Id == processReceiptAtom.Value) {
                                     this.procHandleAtom.Value = newHandle;
