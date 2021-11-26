@@ -20,9 +20,7 @@ The net result is that as you modify and change your files, test binaries are au
 1. Create a directory called 'test' in your existing project.
 2. Open a terminal in this folder.
 3. `git clone --depth 1 https://github.com/caseymarquis/csick.git`
-4. `cd ./csick`
-4. `./install.bat`
-4. `cd ../`
+4. `./csick/install.bat`
 4. `./run-tests.bat`
 10. For example tests, see 'csick/example-project/test'
 11. When csick is running, you can debug specific tests from within VS Code by selecting a test and hitting F5.

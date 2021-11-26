@@ -1,1 +1,1 @@
-dotnet run --project ./App/App.csproj --install
+dotnet run --project %~dp0/App/App.csproj --install
