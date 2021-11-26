@@ -22,9 +22,8 @@ namespace CSick {
             orEquals(ref LogDirPath, Path.Combine(parent.DataDirPath, "logs"));
             orEquals(ref AppUrl, Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? @"http://0.0.0.0:5000/");
             orEquals(ref CompilerPath, "gcc");
-            if (MaxCompileSeconds <= 0) {
-                MaxCompileSeconds = 30;
-            }
+            MaxCompileSeconds = MaxCompileSeconds <= 0 ? 30 : MaxCompileSeconds;
+            MaxTestRunSeconds = MaxTestRunSeconds <= 0 ? 30 : MaxTestRunSeconds;
 
             var solutionDir = Util.GetSolutionDirectory();
             orEqualsList(ref TestDirectories, new List<string> {
@@ -64,6 +63,7 @@ namespace CSick {
         public ImmutableList<string> CompileArguments;
         public string CompilerPath;
         public int MaxCompileSeconds;
+        public int MaxTestRunSeconds;
 
         public ImmutableList<string> GetProcessedCompileArguments(string filePath) {
             var nameExt = Path.GetFileName(filePath);

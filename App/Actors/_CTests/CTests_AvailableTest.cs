@@ -19,6 +19,7 @@ namespace CSick.Actors._CTests {
     public class CTests_AvailableTest : Actor {
         [FlexibleParent] CTests_AvailableTestFile parentFile;
         [Singleton] Signalr_SendUpdates sendUpdates;
+        [Singleton] AppSettings settings;
         [Instance] ProcessRunner processRunner;
 
         protected override TimeSpan RunDelay => new TimeSpan(0, 0, 0, 0, 50);
@@ -108,7 +109,7 @@ namespace CSick.Actors._CTests {
                                 path: executablePath,
                                 workingDirectory: Path.GetDirectoryName(executablePath),
                                 arguments: new string[] { Test.LineNumber.ToString() },
-                                maxRunTime: new TimeSpan(0, 0, 10),
+                                maxRunTime: new TimeSpan(0, 0, settings.UserSettings.MaxTestRunSeconds),
                                 accept: newHandle => {
                                     if (newHandle.Id == processReceiptAtom.Value) {
                                         this.procHandleAtom.Value = newHandle;
@@ -144,7 +145,7 @@ namespace CSick.Actors._CTests {
                         }
                         else {
                             var ph = this.ProcHandle;
-                            if (haveWaited(new TimeSpan(0, 0, 5))) {
+                            if (haveWaited(new TimeSpan(0, 0, settings.UserSettings.MaxTestRunSeconds))) {
                                 return RunStatus.TimedOut;
                             }
                             else if (ph.Status != ProcessStatus.Finished) {

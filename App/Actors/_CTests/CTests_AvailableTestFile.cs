@@ -105,7 +105,7 @@ namespace CSick.Actors._CTests {
                         }
                     case CompileStatus.Compiling:
                         var ph = this.ProcHandle;
-                        if (haveWaited(new TimeSpan(0, 0, 5))) {
+                        if (haveWaited(new TimeSpan(0, 0, settings.UserSettings.MaxCompileSeconds))) {
                             return CompileStatus.TimedOut;
                         }
                         else if (ph.Status != ProcessStatus.Finished) {

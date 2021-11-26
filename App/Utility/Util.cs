@@ -209,10 +209,11 @@ namespace CSick {
             }
         }
 
-        public static async Task<ProcResult> RunProcess(string fileName, string args, string workingDir) {
+        public static async Task<ProcResult> RunProcess(string fileName, string args, string workingDir, TimeSpan? timeout = null) {
+            timeout ??= new TimeSpan(0, 10, 0);
             var processAtom = new Atom<Process>();
             try {
-                return await Util.WaitForThreadAsync(new TimeSpan(0, 10, 00), null, () => {
+                return await Util.WaitForThreadAsync(timeout.Value, null, () => {
                     try {
                         workingDir = Path.GetFullPath(workingDir);
                         var proc = new Process() {

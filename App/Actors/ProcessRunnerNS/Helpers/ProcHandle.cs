@@ -61,7 +61,7 @@ namespace CSick.Actors.ProcessRunnerNS {
         }
 
         public void WithProcess(TimeSpan timeout, Action<Process> withProc) {
-            if (!TryWithProcess(new TimeSpan(0, 0, 5), theProc => {
+            if (!TryWithProcess(timeout, theProc => {
                 withProc(theProc);
             })) {
                 throw new TimeoutException("Failed to access process.");
