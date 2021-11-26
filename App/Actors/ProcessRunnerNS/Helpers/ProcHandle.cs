@@ -82,7 +82,7 @@ namespace CSick.Actors.ProcessRunnerNS {
         }
 
         public void KillProcessWithNoLock() {
-            proc?.Kill();
+            proc?.Kill(true);
         }
     }
 }

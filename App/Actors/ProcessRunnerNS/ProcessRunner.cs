@@ -228,7 +228,7 @@ namespace CSick.Actors.ProcessRunnerNS {
                         try {
                             if (!workingProcess.TryWithProcess(new TimeSpan(0, 0, 5), proc => {
                                 if (proc?.HasExited == false) {
-                                    proc.Kill();
+                                    proc.Kill(true);
                                     proc.WaitForExit(3000); //We are blocking inside the lock. Perhaps there's a better option, but maybe not.
                                 }
                                 try {
