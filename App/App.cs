@@ -34,6 +34,9 @@ namespace CSick {
                     Console.WriteLine($"Config file could not be loaded: {loadError}");
                     return;
                 }
+                if (!config.TryWriteToDiskIfDifferent(out var upgradeSchemeError)) {
+                    Console.WriteLine($"Config file could not be upgraded to new schema: {upgradeSchemeError}");
+                }
             });
             config.UserSettings.FillInEmptySettings(config);
             if (args.Any(x => x == "--install")) {

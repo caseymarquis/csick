@@ -76,23 +76,55 @@ namespace CSick {
     public class AppSettings {
         public readonly string DataDirPath = "../csick-data";
         public string ConfigPath => Path.Combine(DataDirPath, "config.json");
+        public string ConfigBackupPath => Path.Combine(DataDirPath, "config.old.schema.json");
+        public string GitignorePath => Path.Combine(DataDirPath, ".gitignore");
         public bool Exists => File.Exists(ConfigPath);
 
         private Atom<UserSettings> userSettingsAtom = new Atom<UserSettings>();
         public UserSettings UserSettings => userSettingsAtom.Value;
 
-        public bool TryCreateOnDisk(out string error) {
+        public bool TryCreateOnDisk(out string error, bool force = false) {
             try {
                 if (this.userSettingsAtom.Value == null) {
                     this.userSettingsAtom.Value = new UserSettings(this);
                 }
                 Directory.CreateDirectory(DataDirPath);
-                File.WriteAllText(ConfigPath, JsonConvert.SerializeObject(this.UserSettings, Formatting.Indented));
-                try {
-                    File.WriteAllText(Path.Combine(DataDirPath, ".gitignore"), "logs");
+                if (force && File.Exists(ConfigPath)) {
+                    File.Move(ConfigPath, ConfigBackupPath, overwrite: true);
                 }
-                catch {
-                    //If it existed from some reason, then just swallow this error. This is just for convenience.
+                File.WriteAllText(ConfigPath, JsonConvert.SerializeObject(this.UserSettings, Formatting.Indented));
+                {
+                    if (!File.Exists(GitignorePath)) {
+                        File.WriteAllText(GitignorePath, "logs");
+                    }
+                }
+                error = null;
+                return true;
+            }
+            catch (Exception ex) {
+                error = ex.Message;
+                return false;
+            }
+        }
+
+        public bool TryWriteToDiskIfDifferent(out string error) {
+            try {
+                Directory.CreateDirectory(DataDirPath);
+                if (!File.Exists(ConfigPath)) {
+                    error = $"File does not exist - {ConfigPath}";
+                    return false;
+                }
+                string textOnDisk = null;
+                try {
+                    textOnDisk = File.ReadAllText(ConfigPath);
+                }
+                catch (Exception ex) {
+                    error = $"Could not access file {ConfigPath} {ex.Message}";
+                    return false;
+                }
+                var textInMemory = JsonConvert.SerializeObject(this.UserSettings, Formatting.Indented);
+                if (textOnDisk != textInMemory) {
+                    return TryCreateOnDisk(out error, force: true);
                 }
                 error = null;
                 return true;
